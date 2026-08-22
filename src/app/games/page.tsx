@@ -85,7 +85,7 @@ export default function GamesPage() {
         </p>
       </div>
 
-      <p className="mt-5 text-center text-[11px] text-ink-soft/70">登岛五幕在首页，是解锁配对的主线</p>
+      <p className="mt-5 text-center text-[11px] text-ink-soft/70">登岛问答在首页，完成才能配对</p>
       <TabBar />
     </main>
   )

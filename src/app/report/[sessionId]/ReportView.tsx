@@ -2,7 +2,6 @@
 
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import IslandMap from '@/components/IslandMap'
 import IdentityIcon from '@/components/IdentityIcon'
 import Typewriter from '@/components/Typewriter'
 
@@ -52,17 +51,6 @@ export default function ReportView({ identity, loveProfile, preview, slowest }: 
       </div>
 
       <div className="space-y-4 px-5 pt-6">
-        {/* 岛屿地图：你的位置 */}
-        <motion.section
-          className="rounded-card bg-card p-4 shadow-sm"
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.75 }}
-        >
-          <p className="mb-2 text-xs font-medium text-ink-soft">你住在岛上的这里</p>
-          <IslandMap highlight={identity.code} />
-        </motion.section>
-
         {/* 恋爱画像 */}
         <motion.section
           className="rounded-card bg-card p-5 shadow-sm"

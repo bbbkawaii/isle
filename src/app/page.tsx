@@ -22,14 +22,14 @@ interface MatchCard {
   overlapPercent: number | null
   score: number
 }
-interface AnswerCard {
+interface Teaser {
   userId: string
   nickname: string
   avatar: string | null
   city: string
   age: number
   identity: { code: string; name: string }
-  scene: { no: number; title: string; subtitle: string; prompt: string }
+  scene: { title: string; subtitle: string; prompt: string }
   choice: { label: string; quote: string }
 }
 interface RelationCard {
@@ -37,11 +37,7 @@ interface RelationCard {
   score: number
   status: string
   activityTitle: string | null
-  other: {
-    nickname: string
-    avatar: string | null
-    identity: { code: string; name: string }
-  }
+  other: { nickname: string; avatar: string | null; identity: { code: string; name: string } }
 }
 interface ActivityCard {
   id: number
@@ -50,7 +46,14 @@ interface ActivityCard {
   place: string
   icebreak: string
 }
-type Stage = 'loading' | 'new' | 'played' | 'registered'
+interface HomeData {
+  stage: 'new' | 'played' | 'registered'
+  identity?: string | null
+  teaser?: Teaser | null
+  matches?: MatchCard[]
+  relation?: RelationCard | null
+  activity?: ActivityCard | null
+}
 
 const STATUS_TEXT: Record<string, string> = {
   matched: '已配对 · 下一步约TA见面',
@@ -62,12 +65,7 @@ const STATUS_TEXT: Record<string, string> = {
 
 export default function HomePage() {
   const router = useRouter()
-  const [stage, setStage] = useState<Stage>('loading')
-  const [identityCode, setIdentityCode] = useState<string | null>(null)
-  const [matches, setMatches] = useState<MatchCard[]>([])
-  const [teaser, setTeaser] = useState<AnswerCard | null>(null)
-  const [relation, setRelation] = useState<RelationCard | null>(null)
-  const [activity, setActivity] = useState<ActivityCard | null>(null)
+  const [data, setData] = useState<HomeData | null>(null)
   const [liking, setLiking] = useState<string | null>(null)
   const [pendingMsg, setPendingMsg] = useState('')
   const [avatarRaw, setAvatarRaw] = useState<string | null>(null)
@@ -84,21 +82,10 @@ export default function HomePage() {
     const qs = new URLSearchParams()
     if (userId) qs.set('userId', userId)
     if (sessionId) qs.set('sessionId', sessionId)
-
-    Promise.all([
-      fetch(`/api/status?${qs}`).then((r) => r.json()),
-      fetch(`/api/feed${userId ? `?userId=${userId}` : ''}`).then((r) => r.json()),
-      userId ? fetch(`/api/candidates?userId=${userId}`).then((r) => (r.ok ? r.json() : { candidates: [] })) : Promise.resolve({ candidates: [] }),
-    ])
-      .then(([status, feed, cand]) => {
-        setStage(status.stage)
-        setIdentityCode(status.identity ?? null)
-        setTeaser(feed.answerCards?.[0] ?? null)
-        setRelation(feed.relationCard ?? null)
-        setActivity(feed.activityCard ?? null)
-        setMatches(cand.candidates ?? [])
-      })
-      .catch(() => setStage('new'))
+    fetch(`/api/home?${qs}`)
+      .then((r) => r.json())
+      .then(setData)
+      .catch(() => setData({ stage: 'new' }))
   }, [router])
 
   async function like(c: MatchCard) {
@@ -112,21 +99,21 @@ export default function HomePage() {
     })
     if (!res.ok) {
       clearIdentity()
-      setMatches([])
+      setData((d) => (d ? { ...d, matches: [] } : d))
       setLiking(null)
       return
     }
-    const data = await res.json()
-    if (data.matched && data.matchId) {
-      router.push(`/match/${data.matchId}`)
+    const d = await res.json()
+    if (d.matched && d.matchId) {
+      router.push(`/match/${d.matchId}`)
       return
     }
-    setMatches((l) => l.filter((x) => x.userId !== c.userId))
+    setData((prev) => (prev ? { ...prev, matches: (prev.matches ?? []).filter((x) => x.userId !== c.userId) } : prev))
     setPendingMsg(`已向 ${c.identity.name}·${c.nickname} 发出心动，TA也心动就会配对（在我的里可看）`)
     setLiking(null)
   }
 
-  const identity = identityCode ? getIdentity(identityCode) : null
+  const identity = data?.identity ? getIdentity(data.identity) : null
 
   return (
     <main className="shell bg-paper px-5 pb-28 pt-6">
@@ -141,18 +128,25 @@ export default function HomePage() {
         </Link>
       </header>
 
-      {stage === 'loading' && <p className="mt-16 text-center text-sm text-ink-soft">正在靠岸……</p>}
+      {/* 骨架屏：数据没到之前不再是空白的「正在靠岸」 */}
+      {!data && (
+        <div className="space-y-3">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="h-24 animate-pulse rounded-card bg-white/70" />
+          ))}
+        </div>
+      )}
 
-      {/* —— 新用户：三步引导 + 一张试读卡 —— */}
-      {stage === 'new' && (
+      {/* —— 新用户：登岛引导 —— */}
+      {data?.stage === 'new' && (
         <>
           <section className="rounded-card bg-gradient-to-br from-[#14263a] to-[#1d4a5f] p-6 text-white shadow-sm">
-            <p className="text-xs text-white/55">欢迎上岛，三步开始</p>
+            <p className="text-xs text-white/55">欢迎来到屿见，三步开始</p>
             <div className="mt-4 space-y-3.5">
               {[
-                ['玩一局五幕剧情', '5 分钟，测评藏在故事里'],
-                ['拿到你的岛屿人格报告', '七种岛民，你住在哪里就是谁'],
-                ['登岛，按契合指数配对', '双向心动，约一次真的见面'],
+                ['登岛', '回答几道情境题，5 分钟'],
+                ['获得你的岛上身份', '你住在哪里，你就是谁'],
+                ['按契合指数认识人', '双向心动，约一次真的见面'],
               ].map(([t, d], i) => (
                 <div key={t} className="flex items-center gap-3">
                   <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-coral text-xs font-bold">
@@ -169,21 +163,21 @@ export default function HomePage() {
               href="/play"
               className="mt-5 flex w-full cursor-pointer items-center justify-center gap-2 rounded-full bg-coral py-4 text-base font-semibold shadow-[0_8px_24px_rgba(255,107,94,0.45)] transition-transform active:scale-[0.98]"
             >
-              <Play size={18} fill="currentColor" /> 开始第一局
+              <Play size={18} fill="currentColor" /> 开始登岛
             </Link>
           </section>
 
-          {teaser && (
+          {data.teaser && (
             <>
               <p className="mb-2.5 mt-6 text-xs font-medium text-ink-soft">岛上的人，正在这样回答 · 先偷看一眼</p>
-              <TeaserSection card={teaser} />
+              <TeaserSection card={data.teaser} />
             </>
           )}
         </>
       )}
 
-      {/* —— 玩完未登记：身份 + 登岛证 CTA —— */}
-      {stage === 'played' && identity && (
+      {/* —— 玩完未登记 —— */}
+      {data?.stage === 'played' && identity && (
         <Link
           href={`/report/${localStorage.getItem('island_session_id') ?? ''}`}
           className="flex cursor-pointer items-center gap-3 rounded-card bg-gradient-to-br from-[#14263a] to-[#1d4a5f] p-5 text-white shadow-sm transition-transform active:scale-[0.99]"
@@ -198,7 +192,7 @@ export default function HomePage() {
           <ChevronRight size={18} className="text-white/50" />
         </Link>
       )}
-      {stage === 'played' && (
+      {data?.stage === 'played' && (
         <>
           <Link
             href="/register"
@@ -210,31 +204,31 @@ export default function HomePage() {
         </>
       )}
 
-      {/* —— 已登记：契合指数列表 —— */}
-      {stage === 'registered' && (
+      {/* —— 已登记 —— */}
+      {data?.stage === 'registered' && (
         <>
-          {relation && (
+          {data.relation && (
             <>
-              <p className="mb-2.5 text-xs font-medium text-ink-soft">我的配对</p>
-              <RelationSection card={relation} />
+              <p className="mb-2.5 mt-1 text-xs font-medium text-ink-soft">我的配对</p>
+              <RelationSection card={data.relation} />
             </>
           )}
           {pendingMsg && <p className="mb-3 rounded-2xl bg-teal/10 px-4 py-2.5 text-[11px] leading-5 text-teal">{pendingMsg}</p>}
           <p className="mb-2.5 mt-5 text-xs font-medium text-ink-soft">和你同船的人 · 按契合指数排序</p>
           <div className="space-y-3">
-            {matches.map((c, i) => (
+            {(data.matches ?? []).map((c, i) => (
               <MatchSection key={c.userId} card={c} index={i} liking={liking === c.userId} onLike={() => like(c)} />
             ))}
-            {matches.length === 0 && (
+            {(data.matches ?? []).length === 0 && (
               <div className="rounded-card bg-card p-6 text-center shadow-sm">
                 <p className="text-sm text-ink">TA 们还在另一座岛</p>
                 <p className="mt-2 text-xs text-ink-soft">放宽城市或年龄偏好，会多出几个可能认识的人</p>
               </div>
             )}
           </div>
-          {activity && (
+          {data.activity && (
             <div className="mt-4">
-              <ActivitySection card={activity} />
+              <ActivitySection card={data.activity} />
             </div>
           )}
         </>
@@ -245,14 +239,14 @@ export default function HomePage() {
   )
 }
 
-/* —— 契合指数卡（已登记首页主体）—— */
+/* —— 契合指数卡 —— */
 function MatchSection({ card, index, liking, onLike }: { card: MatchCard; index: number; liking: boolean; onLike: () => void }) {
   return (
     <motion.section
       className="rounded-card bg-card p-4 shadow-sm"
       initial={{ opacity: 0, y: 14 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: Math.min(index * 0.06, 0.3) }}
+      transition={{ delay: Math.min(index * 0.05, 0.25) }}
     >
       <div className="flex items-center gap-3">
         <UserAvatar avatar={card.avatar} seed={card.userId} size={52} />
@@ -287,7 +281,7 @@ function MatchSection({ card, index, liking, onLike }: { card: MatchCard; index:
 }
 
 /* —— 新用户试读卡 —— */
-function TeaserSection({ card }: { card: AnswerCard }) {
+function TeaserSection({ card }: { card: Teaser }) {
   return (
     <section className="rounded-card bg-card p-5 shadow-sm">
       <p className="text-[11px] tracking-wide text-ink-soft">
@@ -308,7 +302,7 @@ function TeaserSection({ card }: { card: AnswerCard }) {
   )
 }
 
-/* —— 关系进度卡：对方形象 + 身份 + 进度 + 契合指数 —— */
+/* —— 关系进度卡 —— */
 function RelationSection({ card }: { card: RelationCard }) {
   return (
     <Link

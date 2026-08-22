@@ -89,7 +89,7 @@ export default function LoginPage() {
         <LogIn size={18} /> {busy ? '正在登岛……' : '登录'}
       </button>
       <p className="mt-3 text-center text-[11px] text-ink-soft">
-        还没有账号？玩完五幕、办理登岛证时会自动注册
+        还没有账号？完成登岛问答、办理登岛证时会自动注册
       </p>
     </main>
   )

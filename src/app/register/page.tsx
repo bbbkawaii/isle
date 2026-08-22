@@ -40,7 +40,7 @@ export default function RegisterPage() {
 
   async function submit() {
     if (!gender) {
-      setError('选择你的性别（本产品为异性匹配）')
+      setError('性别信息缺失，请回首页重新设置形象')
       return
     }
     setSubmitting(true)
@@ -53,6 +53,7 @@ export default function RegisterPage() {
         avatar: localStorage.getItem('island_avatar'),
         email,
         password,
+        nickname: localStorage.getItem('island_nickname'),
         gender,
         birthYear,
         city,
@@ -110,29 +111,7 @@ export default function RegisterPage() {
       </div>
 
       <div className="mt-4 space-y-4 rounded-card bg-card p-5 shadow-sm">
-        {/* 性别 */}
-        <div>
-          <label className="mb-2 block text-xs font-medium text-ink-soft">性别（异性互配）</label>
-          <div className="grid grid-cols-2 gap-3">
-            {[
-              { v: 'female', l: '女生' },
-              { v: 'male', l: '男生' },
-            ].map((g) => (
-              <button
-                key={g.v}
-                type="button"
-                onClick={() => setGender(g.v)}
-                className={`h-12 cursor-pointer rounded-xl border text-sm transition-colors duration-200 ${
-                  gender === g.v ? 'border-coral bg-coral/10 font-semibold text-coral-deep' : 'border-[#e2ded4] text-ink-soft'
-                }`}
-              >
-                {g.l}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* 出生年份 / 城市 */}
+        {/* 出生年份 / 城市（性别和昵称已在形象设置时填过） */}
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className="mb-2 block text-xs font-medium text-ink-soft">出生年份</label>

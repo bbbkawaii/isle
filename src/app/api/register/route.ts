@@ -6,7 +6,7 @@ import { prisma } from '@/lib/db'
 // 邮箱+密码注册（无验证码）；门槛偏好带默认值；先玩后登记的转化设计落在这里
 export async function POST(req: Request) {
   const body = await req.json()
-  const { deviceToken, gender, birthYear, city, education, height, intent, ageMin, ageMax, cityScope, eduReq, avatar, email, password } = body
+  const { deviceToken, gender, birthYear, city, education, height, intent, ageMin, ageMax, cityScope, eduReq, avatar, email, password, nickname } = body
   if (!deviceToken || !gender || !birthYear || !city || !education) {
     return NextResponse.json({ error: 'deviceToken/gender/birthYear/city/education required' }, { status: 400 })
   }
@@ -39,6 +39,7 @@ export async function POST(req: Request) {
       avatar: typeof avatar === 'string' ? avatar : null,
       email: emailNorm,
       passwordHash: await bcrypt.hash(String(password), 10),
+      nickname: typeof nickname === 'string' && nickname.trim() ? nickname.trim().slice(0, 12) : null,
       gender,
       birthYear: Number(birthYear),
       city,

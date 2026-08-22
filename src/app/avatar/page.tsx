@@ -14,6 +14,7 @@ export default function AvatarPage() {
   const router = useRouter()
   const [mode, setMode] = useState<'photo' | 'manual'>('photo')
   const [gender, setGender] = useState<string>(typeof window !== 'undefined' ? localStorage.getItem('island_gender') ?? '' : '')
+  const [nickname, setNickname] = useState<string>(typeof window !== 'undefined' ? localStorage.getItem('island_nickname') ?? '' : '')
 
   // 照片转绘状态
   const [preview, setPreview] = useState<string | null>(null) // 本地预览 dataURL
@@ -85,10 +86,15 @@ export default function AvatarPage() {
   }
 
   async function save(avatarValue: string) {
+    if (!nickname.trim()) {
+      setErrorMsg('先给自己起个昵称')
+      return
+    }
     if (!gender) {
       setErrorMsg('先选择你的性别')
       return
     }
+    localStorage.setItem('island_nickname', nickname.trim())
     localStorage.setItem('island_gender', gender)
     localStorage.setItem('island_avatar', avatarValue)
     // 已登记用户同步入库，别人立即可见新形象
@@ -119,8 +125,19 @@ export default function AvatarPage() {
         </Link>
       </div>
 
-      {/* 性别（异性互配，最前置的匹配信息） */}
+      {/* 昵称：岛上怎么称呼你 */}
       <div className="mt-5">
+        <p className="mb-2 text-xs font-medium text-ink-soft">昵称（岛上怎么称呼你）</p>
+        <input
+          value={nickname}
+          onChange={(e) => setNickname(e.target.value.slice(0, 12))}
+          placeholder="如：守灯人"
+          className="h-12 w-full rounded-xl border border-[#e2ded4] bg-card px-3 text-sm text-ink outline-none focus:border-coral"
+        />
+      </div>
+
+      {/* 性别（异性互配，最前置的匹配信息） */}
+      <div className="mt-4">
         <p className="mb-2 text-xs font-medium text-ink-soft">你的性别（屿见按异性匹配）</p>
         <div className="grid grid-cols-2 gap-2.5">
           {[

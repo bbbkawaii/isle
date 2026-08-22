@@ -50,6 +50,7 @@ const INVITE_TEXT: Record<string, string> = {
 
 export default function ProfilePage() {
   const [me, setMe] = useState<MeData | null>(null)
+  const [loaded, setLoaded] = useState(false)
   const [avatarRaw, setAvatarRaw] = useState<string | null>(null)
 
   useEffect(() => {
@@ -57,6 +58,7 @@ export default function ProfilePage() {
     const userId = getMyUserId()
     if (!userId) {
       setMe({ registered: false })
+      setLoaded(true)
       return
     }
     fetch(`/api/me?userId=${userId}`)
@@ -67,6 +69,7 @@ export default function ProfilePage() {
         setMe(d)
       })
       .catch(() => setMe({ registered: false }))
+      .finally(() => setLoaded(true))
   }, [])
 
   return (
@@ -75,7 +78,17 @@ export default function ProfilePage() {
         <h1 className="font-display text-2xl leading-7 text-ink">我的</h1>
       </header>
 
+      {/* 加载骨架：不闪「游客」 */}
+      {!loaded && (
+        <div className="space-y-3">
+          <div className="h-28 animate-pulse rounded-card bg-white/70" />
+          <div className="h-16 animate-pulse rounded-card bg-white/70" />
+          <div className="h-16 animate-pulse rounded-card bg-white/70" />
+        </div>
+      )}
+
       {/* 形象卡 */}
+      {loaded && (
       <section className="rounded-card bg-gradient-to-b from-[#14263a] to-[#1d4a5f] p-5 text-white shadow-sm">
         <div className="flex items-center gap-4">
           <UserAvatar avatar={me?.user?.avatar ?? avatarRaw} seed="me" size={64} ring />
@@ -84,13 +97,13 @@ export default function ProfilePage() {
               <>
                 <p className="font-display text-lg">{me.report?.identity ?? '岛民'}</p>
                 <p className="mt-0.5 text-xs text-white/60">
-                  {me.user?.city} · {me.user?.age} 岁 · {me.user?.gender === 'male' ? '男生' : '女生'}
+                  {me.user?.nickname ?? '岛民'} · {me.user?.city} · {me.user?.age} 岁
                 </p>
               </>
             ) : (
               <>
                 <p className="font-display text-lg">游客</p>
-                <p className="mt-0.5 text-xs text-white/60">玩完五幕、办登岛证后点亮身份</p>
+                <p className="mt-0.5 text-xs text-white/60">完成登岛问答、办登岛证后点亮身份</p>
               </>
             )}
           </div>
@@ -98,16 +111,17 @@ export default function ProfilePage() {
             href="/avatar"
             className="flex h-9 cursor-pointer items-center gap-1 rounded-full bg-white/10 px-3 text-xs text-white/80"
           >
-            <PenLine size={13} /> 捏脸
+            <PenLine size={13} /> 改形象
           </Link>
         </div>
       </section>
+      )}
 
       {/* 未登记引导 */}
-      {me && !me.registered && (
+      {loaded && me && !me.registered && (
         <section className="mt-4 rounded-card bg-card p-5 text-center shadow-sm">
           <p className="text-sm text-ink">还没办登岛证</p>
-          <p className="mt-2 text-xs leading-5 text-ink-soft">先玩五幕拿到人格报告，再登记解锁配对</p>
+          <p className="mt-2 text-xs leading-5 text-ink-soft">先完成登岛问答拿到人格报告，再登记解锁配对</p>
           <Link
             href="/play"
             className="mt-4 flex h-12 cursor-pointer items-center justify-center rounded-full bg-coral text-sm font-semibold text-white"
@@ -118,7 +132,7 @@ export default function ProfilePage() {
       )}
 
       {/* 身份报告 */}
-      {me?.report && (
+      {loaded && me?.report && (
         <Link
           href={`/report/${me.report.sessionId}`}
           className="mt-4 flex cursor-pointer items-center gap-3 rounded-card bg-card p-4 shadow-sm transition-transform active:scale-[0.99]"
@@ -139,7 +153,7 @@ export default function ProfilePage() {
       )}
 
       {/* 发出的心动（等待对方回应） */}
-      {me?.pendingLikes && me.pendingLikes.length > 0 && (
+      {loaded && me?.pendingLikes && me.pendingLikes.length > 0 && (
         <section className="mt-4">
           <p className="mb-2.5 text-xs font-medium text-ink-soft">我发出的心动 · 等TA也心动</p>
           <div className="space-y-2.5">
@@ -160,7 +174,7 @@ export default function ProfilePage() {
       )}
 
       {/* 匹配记录 */}
-      {me?.matches && me.matches.length > 0 && (
+      {loaded && me?.matches && me.matches.length > 0 && (
         <section className="mt-4">
           <p className="mb-2.5 text-xs font-medium text-ink-soft">我的配对</p>
           <div className="space-y-2.5">
@@ -192,7 +206,7 @@ export default function ProfilePage() {
       )}
 
       {/* 登岛证信息 */}
-      {me?.registered && me.user && (
+      {loaded && me?.registered && me.user && (
         <section className="mt-4 rounded-card bg-card p-5 shadow-sm">
           <p className="mb-3 text-xs font-medium text-ink-soft">登岛证</p>
           <div className="grid grid-cols-2 gap-y-2.5 text-xs">
@@ -207,9 +221,9 @@ export default function ProfilePage() {
         </section>
       )}
 
-      {me?.registered && me.user?.prefs && <PrefsSection userId={getMyUserId() ?? ''} initial={me.user.prefs} />}
+      {loaded && me?.registered && me.user?.prefs && <PrefsSection userId={getMyUserId() ?? ''} initial={me.user.prefs} />}
 
-      {me?.registered && (
+      {loaded && me?.registered && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-4 space-y-3">
           <Link
             href="/candidates"

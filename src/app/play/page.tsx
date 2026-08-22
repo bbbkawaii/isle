@@ -10,7 +10,6 @@ import {
 } from 'lucide-react'
 import { SCENES } from '@/lib/content/scenes'
 import { getDeviceToken, getMyUserId } from '@/lib/client-device'
-import IslandMap from '@/components/IslandMap'
 
 const ICONS: Record<string, LucideIcon> = {
   Wrench, BookOpen, Gift, Feather, Compass, Coffee, TreePine, Megaphone,
@@ -148,21 +147,31 @@ export default function PlayPage() {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6 }}
           >
-            <motion.div
-              initial={{ scale: 1.5, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ duration: 1.2, ease: 'easeOut' }}
-              className="w-full"
-            >
-              <IslandMap dark revealDots />
-            </motion.div>
+            {/* 一盏灯亮起：登岛完成 */}
+            <div className="relative flex h-40 items-center justify-center">
+              <motion.span
+                className="absolute h-16 w-16 rounded-full"
+                style={{ background: 'radial-gradient(circle, rgba(255,184,77,0.55) 0%, rgba(255,184,77,0) 70%)' }}
+                initial={{ scale: 0.3, opacity: 0 }}
+                animate={{ scale: [0.3, 1.8, 1.2], opacity: [0, 1, 0.8] }}
+                transition={{ duration: 1.6, ease: 'easeOut' }}
+              />
+              <motion.span
+                className="relative flex h-12 w-12 items-center justify-center rounded-full bg-sun shadow-[0_0_50px_18px_rgba(255,184,77,0.45)]"
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.5, type: 'spring', stiffness: 200, damping: 14 }}
+              >
+                <span className="h-4 w-4 rounded-full bg-white/90" />
+              </motion.span>
+            </div>
             <motion.p
-              className="font-display mt-8 text-lg text-white/90"
+              className="font-display mt-6 text-lg text-white/90"
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 1.4 }}
+              transition={{ delay: 1.2 }}
             >
-              五幕演完，你在岛上有了自己的位置
+              登岛完成，你在岛上有了自己的位置
             </motion.p>
             {finishError ? (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-3">
@@ -191,8 +200,8 @@ export default function PlayPage() {
       <div className="relative z-10 flex min-h-[100dvh] flex-col px-5 pb-6 pt-6" onClick={handleTap}>
         {/* 顶部：幕数与进度 */}
         <div className="flex items-center justify-between">
-          <p className="text-[11px] tracking-[0.35em] text-white/60">
-            第{'一二三四五'[index]}幕 · {scene.title}
+          <p className="text-[11px] tracking-[0.3em] text-white/60">
+            {scene.title} · {scene.subtitle}
           </p>
           <div className="flex items-center gap-1.5">
             {SCENES.map((s, i) => (

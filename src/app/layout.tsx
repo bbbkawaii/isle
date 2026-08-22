@@ -4,7 +4,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "屿见 · 先遇见回答，再遇见人",
   description:
-    "用一局剧情认识一个人，然后真的去见 TA。玩五幕剧情拿到岛屿人格，按契合指数配对，把配对约成一次见面。",
+    "用一局剧情认识一个人，然后真的去见 TA。完成登岛问答拿到岛屿人格，按契合指数配对，把配对约成一次见面。",
   manifest: "/manifest.webmanifest",
   icons: { icon: "/icon.png", apple: "/icon.png" },
   appleWebApp: {

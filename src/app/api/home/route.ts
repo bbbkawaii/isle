@@ -1,0 +1,152 @@
+import { NextResponse } from 'next/server'
+import { prisma } from '@/lib/db'
+import { getIdentity } from '@/lib/content/identities'
+import { getScene, getOption } from '@/lib/content/scenes'
+import { pairScore } from '@/lib/scoring'
+import { overlapOf, blendScore } from '@/lib/vane-match'
+
+// GET /api/home?userId=&sessionId=
+// 首页聚合接口：阶段判定 + 推荐流/配对列表/关系卡，一次往返取代三次请求
+
+const EDU_LEVEL: Record<string, number> = { high_school: 1, college: 2, bachelor: 3, master: 4, phd: 5 }
+const EDU_REQ: Record<string, number> = { none: 0, bachelor: 3, master: 4 }
+
+async function loadMe(id: string) {
+  return prisma.user.findUnique({
+    where: { id },
+    include: { session: { include: { answers: true, report: true } } },
+  })
+}
+
+export async function GET(req: Request) {
+  const { searchParams } = new URL(req.url)
+  const userId = searchParams.get('userId')
+  const sessionId = searchParams.get('sessionId')
+
+  // —— 阶段判定 ——
+  let stage: 'new' | 'played' | 'registered' = 'new'
+  let identityCode: string | null = null
+  let me: Awaited<ReturnType<typeof loadMe>> = null
+  if (userId) {
+    me = await loadMe(userId)
+    if (me) stage = 'registered'
+  }
+  if (!me && sessionId) {
+    const session = await prisma.gameSession.findUnique({ where: { id: sessionId }, include: { report: true } })
+    if (session?.report) {
+      stage = 'played'
+      identityCode = session.report.identity
+    }
+  }
+
+  const res: Record<string, unknown> = { stage, identity: identityCode }
+
+  if (stage === 'new') {
+    // 新用户：一张试读卡
+    const seeds = await prisma.user.findMany({
+      where: { session: { deviceToken: { startsWith: 'seed-' } } },
+      include: { session: { include: { answers: true, report: true } } },
+      take: 12,
+    })
+    const u = seeds.find((s) => s.session?.report)
+    if (u?.session) {
+      const identity = getIdentity(u.session.report!.identity)!
+      const answer = u.session.answers.find((a) => a.sceneNo === 2) ?? u.session.answers[1]
+      const scene = getScene(answer.sceneNo)!
+      const opt = getOption(answer.sceneNo, answer.optionId)!
+      res.teaser = {
+        userId: u.id,
+        nickname: u.nickname ?? '匿名岛民',
+        avatar: u.avatar,
+        city: u.city,
+        age: 2026 - u.birthYear,
+        identity: { code: identity.code, name: identity.name },
+        scene: { title: scene.title, subtitle: scene.subtitle, prompt: scene.prompt },
+        choice: { label: opt.label, quote: opt.quote },
+      }
+    }
+    return NextResponse.json(res)
+  }
+
+  if (stage === 'played') {
+    return NextResponse.json(res)
+  }
+
+  // —— registered：配对列表 + 关系卡 + 活动卡 ——
+  const myAnswers = me!.session!.answers.map((a) => ({ sceneNo: a.sceneNo, optionId: a.optionId }))
+  const myVane = await prisma.vaneAnswer.findMany({ where: { userId: me!.id } })
+
+  const liked = await prisma.like.findMany({ where: { fromUserId: me!.id }, select: { toUserId: true } })
+  const myMatches = await prisma.match.findMany({ where: { OR: [{ userAId: me!.id }, { userBId: me!.id }] } })
+  const excluded = new Set<string>([me!.id, ...liked.map((l) => l.toUserId), ...myMatches.map((m) => (m.userAId === me!.id ? m.userBId : m.userAId))])
+
+  const pool = await prisma.user.findMany({
+    where: {
+      id: { notIn: [...excluded] },
+      gender: me!.gender === 'male' ? 'female' : 'male',
+      birthYear: { gte: me!.ageMin, lte: me!.ageMax },
+      ageMin: { lte: me!.birthYear },
+      ageMax: { gte: me!.birthYear },
+      ...(me!.cityScope === 'same_city' ? { OR: [{ city: me!.city }, { cityScope: 'any' }] } : {}),
+    },
+    include: { session: { include: { answers: true, report: true } }, vaneAnswers: true },
+  })
+
+  res.matches = pool
+    .filter((u) => {
+      const theirLevel = EDU_LEVEL[u.education] ?? 0
+      const myLevel = EDU_LEVEL[me!.education] ?? 0
+      return theirLevel >= (EDU_REQ[me!.eduReq] ?? 0) && myLevel >= (EDU_REQ[u.eduReq] ?? 0)
+    })
+    .map((u) => {
+      const identity = getIdentity(u.session!.report!.identity)!
+      const theirAnswers = u.session!.answers.map((a) => ({ sceneNo: a.sceneNo, optionId: a.optionId }))
+      const { score: islandScore } = pairScore(myAnswers, theirAnswers)
+      const overlap = overlapOf(myVane, u.vaneAnswers)
+      return {
+        userId: u.id,
+        nickname: u.nickname ?? '匿名岛民',
+        age: 2026 - u.birthYear,
+        city: u.city,
+        height: u.height,
+        avatar: u.avatar,
+        identity: { code: identity.code, name: identity.name, core: identity.core, tags: identity.tags.slice(0, 2) },
+        overlapPercent: overlap.total > 0 ? overlap.percent : null,
+        score: blendScore(islandScore, overlap),
+      }
+    })
+    .sort((a, b) => b.score - a.score)
+
+  const m = myMatches.length
+    ? await prisma.match.findFirst({
+        where: { OR: [{ userAId: me!.id }, { userBId: me!.id }] },
+        orderBy: { createdAt: 'desc' },
+        include: {
+          invitation: { include: { activity: true } },
+          userA: { include: { session: { include: { report: true } } } },
+          userB: { include: { session: { include: { report: true } } } },
+        },
+      })
+    : null
+  if (m) {
+    const other = m.userAId === me!.id ? m.userB : m.userA
+    res.relation = {
+      matchId: m.id,
+      score: m.score,
+      status: m.invitation?.status ?? 'matched',
+      activityTitle: m.invitation?.activity.title ?? null,
+      other: {
+        nickname: other.nickname ?? '匿名岛民',
+        avatar: other.avatar,
+        identity: { code: getIdentity(other.session!.report!.identity)!.code, name: getIdentity(other.session!.report!.identity)!.name },
+      },
+    }
+  }
+
+  const activity = await prisma.activity.findFirst()
+  if (activity) {
+    res.activity = { id: activity.id, title: activity.title, timeDesc: activity.timeDesc, place: activity.place, icebreak: activity.icebreak }
+  }
+
+  return NextResponse.json(res)
+}

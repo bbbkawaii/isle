@@ -79,7 +79,7 @@ export default function CandidatesPage() {
   if (noUser) {
     return (
       <main className="shell flex min-h-[100dvh] flex-col items-center justify-center bg-paper px-8 text-center">
-        <p className="text-sm text-ink-soft">还没办登岛证，先完成五幕游戏再来认识人</p>
+        <p className="text-sm text-ink-soft">还没办登岛证，先完成登岛问答再来认识人</p>
         <Link href="/play" className="mt-6 flex h-12 items-center justify-center rounded-full bg-coral px-8 font-semibold text-white">
           去登岛
         </Link>

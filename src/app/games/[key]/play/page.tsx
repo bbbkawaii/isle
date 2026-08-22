@@ -115,11 +115,11 @@ export default function VanePlayPage() {
     return (
       <main className="shell flex min-h-[100dvh] flex-col items-center justify-center bg-paper px-8 text-center">
         <p className="font-display text-lg text-ink">办张登岛证就能玩了</p>
-        <p className="mt-2 text-xs leading-5 text-ink-soft">你已经玩完五幕，只差登记这一步——剧情匹配需要知道你的视角</p>
+        <p className="mt-2 text-xs leading-5 text-ink-soft">你已经完成登岛问答，只差登记这一步——剧情匹配需要知道你的视角</p>
         <Link href="/register" className="mt-6 flex h-12 items-center justify-center rounded-full bg-coral px-8 text-sm font-semibold text-white">
           办理登岛证
         </Link>
-        <Link href="/play" className="mt-3 text-xs text-ink-soft underline">重玩一次五幕</Link>
+        <Link href="/play" className="mt-3 text-xs text-ink-soft underline">重新回答登岛问答</Link>
       </main>
     )
   }
