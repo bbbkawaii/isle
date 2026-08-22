@@ -7,7 +7,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite" // 迁移上线：改 postgresql + 换 DATABASE_URL 即可（见 README）
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 

@@ -19,7 +19,7 @@
 ## 技术栈
 
 - Next.js 16（App Router）+ TypeScript + Tailwind CSS 4 + Framer Motion + lucide-react
-- Prisma + SQLite（本地）；切线上只改 provider 为 postgres + 换 DATABASE_URL
+- Prisma + Supabase Postgres（生产）；Vercel 通过 Supavisor transaction pooler 连接
 - LLM：OpenAI 兼容 API（可选），未配置或超时 8s 自动回退预生成文案，演示永不翻车
 
 ## 本地运行
@@ -52,23 +52,21 @@ LLM_MODEL=xxx
 
 不填 = 全部走预生成兜底（身份画像用 identities.ts 内置文案，叙事用动线+判词拼接）。调用的三个文案：恋爱画像、相遇叙事、邀请语。
 
-## 切线上 Checklist（Vercel + Supabase，代码已就绪）
+## 线上部署（Vercel + Supabase）
 
-1. **Supabase**：建项目 → Settings/Database，拿两条连接串：
-   - Session 连接（端口 5432）：用于一次性 `db push` 和 `seed`
-   - Transaction pooler（端口 6543）：给线上服务用
-2. **切 provider**：`prisma/schema.prisma` 里 `provider = "sqlite"` 改 `"postgresql"`（就这一行）
-3. **建表灌种子**（本地跑，指向线上库）：
-   ```bash
-   DATABASE_URL="<5432直连串>" pnpm db:push
-   DATABASE_URL="<5432直连串>" pnpm db:seed
-   ```
-4. **Vercel**：推 GitHub → 导入项目（Next.js 自动识别），环境变量加：
-   - `DATABASE_URL` = 6543 pooler 串（带 `?pgbouncer=true&connection_limit=1&sslmode=require`）
-   - `LLM_*`、`AVATAR_*`（SiliconFlow key 等）
-   - `postinstall: prisma generate` 已配好，无需额外 Build Command
-5. **注意**：线上文件系统只读——种子 NPC 头像是构建时静态文件（public/avatars）没问题；用户照片转绘头像当前写本地文件，上线前把 `/api/avatar/edit` 改为返回 data URL 存库（UserAvatar 已支持 data: 前缀，约 10 行改动）
-6. 上线后用线上链接重走一遍：捏脸（含性别）→ 五幕 → 报告 → 邮箱注册登岛证 → 匹配 → 邀约；换浏览器用邮箱登录验证找回
+本仓库已使用 PostgreSQL schema。生产项目连接 `Supabase`，Vercel 环境变量仅需保存：
+
+- `DATABASE_URL`：Supavisor transaction pooler（端口 6543），并带 `pgbouncer=true&connection_limit=1&sslmode=require`；适合无服务器 API 路由。
+- `LLM_*`、`AVATAR_*`：可选；未配置时会回退到内置文案和默认头像流程。
+
+初始化数据时，使用同一项目的 Session pooler（端口 5432）运行：
+
+```bash
+DATABASE_URL="<5432 session pooler>" pnpm db:push
+DATABASE_URL="<5432 session pooler>" pnpm db:seed
+```
+
+用户转绘头像以 data URL 存入数据库，兼容 Vercel 的只读文件系统。
 
 ## 邮箱账号说明
 
@@ -131,4 +129,3 @@ public/bg, public/sprites      AI 生成的背景图与立绘
 | `llm` | AI 文案的人设 prompt |
 
 改完 `game.json` 后：`pnpm build` 生效；若改了 `identities`/`seed` 相关内容，跑 `pnpm demo:reset` 重建种子。换一套题材（宫斗/悬疑/职场）理论上只需替换此文件 + 背景图。
-
