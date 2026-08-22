@@ -1,26 +1,101 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* 设计系统：参考精品社交 App —— 暖奶油底、大圆角软阴影卡片、
+   柔和多色标签胶囊、珊瑚渐变主按钮、悬浮胶囊底栏（移动端 H5，375px 基准） */
+@theme {
+  /* 深色世界（游戏/配对） */
+  --color-night: #0e1420;
+  --color-night-soft: #1a2333;
+
+  /* 浅色世界：暖奶油纸底 */
+  --color-paper: #f6f2ea;
+  --color-card: #ffffff;
+  --color-ink: #2b2620;
+  --color-ink-soft: #8a8175;
+
+  /* 强调：珊瑚渐变 + 辅助 */
+  --color-coral: #ff6b5e;
+  --color-coral-deep: #e8503f;
+  --color-teal: #12a594;
+  --color-sun: #ffb84d;
+
+  --radius-card: 22px;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB",
+    "Noto Sans SC", "Microsoft YaHei", sans-serif;
+  overscroll-behavior-y: none;
+}
+
+/* 标题：粗黑现代（对齐参考风格），替代原衬线 */
+.font-display {
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Noto Sans SC", sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+/* 页面容器：移动竖屏，居中限宽 */
+.shell {
+  margin-inline: auto;
+  width: 100%;
+  max-width: 430px;
+  min-height: 100dvh;
+  position: relative;
+}
+
+/* 深色页基底 */
+.shell-night {
+  background: var(--color-night);
+  color: #f4f6fa;
+}
+
+/* ===== 全局质感覆盖（unlayered，优先于 Tailwind 工具类） ===== */
+
+/* 卡片：大圆角 + 柔和双层阴影 + 细腻描边（全站 rounded-card 统一升级） */
+.rounded-card {
+  border-radius: var(--radius-card);
+  border: 1px solid rgba(80, 60, 40, 0.05);
+  box-shadow:
+    0 2px 10px rgba(80, 60, 40, 0.04),
+    0 10px 34px rgba(80, 60, 40, 0.07);
+}
+
+/* 珊瑚主色：全局升级为暖渐变（按钮/强调块） */
+.bg-coral {
+  background-image: linear-gradient(135deg, #ff8a70 0%, #ff6b5e 45%, #f4553f 100%);
+}
+.bg-gradient-to-br.from-\[\#14263a\] {
+  background-image: linear-gradient(160deg, #22354f 0%, #14263a 45%, #1d3a52 100%);
+}
+
+/* ===== 标签胶囊色板（柔和多色） ===== */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.18rem 0.55rem;
+  font-size: 10px;
+  line-height: 1.5;
+  font-weight: 500;
+}
+.chip-coral { background: #ffe9e2; color: #d4523f; }
+.chip-sage  { background: #e4f0e6; color: #3f7d54; }
+.chip-sky   { background: #e3eef6; color: #3d6f96; }
+.chip-sand  { background: #f6ecd9; color: #9a7434; }
+.chip-mauve { background: #f0e6f2; color: #84588f; }
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }

@@ -39,3 +39,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# 本地数据库与运行时生成的用户头像（seed-*.png 保留提交）
+prisma/*.db
+public/avatars/av_*.png
+!.env.example

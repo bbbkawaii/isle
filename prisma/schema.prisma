@@ -1,0 +1,145 @@
+// 岛屿人格测试 Demo 数据模型
+// 注意：SQLite 无 Json 类型，vector/tags/fogContrast/fitTags 以 JSON 字符串存储，
+// 切换 postgres 时可保持 String（代码统一走 JSON.parse），无需迁移。
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite" // 迁移上线：改 postgresql + 换 DATABASE_URL 即可（见 README）
+  url      = env("DATABASE_URL")
+}
+
+// 游戏局与用户解耦：游客先玩，登岛登记时才认领（claimedBy）
+model GameSession {
+  id          String        @id @default(cuid())
+  deviceToken String // 前端 localStorage 生成，找回自己的局
+  finishedAt  DateTime?
+  createdAt   DateTime      @default(now())
+  answers     SceneAnswer[]
+  report      Report?
+  claimedBy   User?         @relation("ClaimedSession")
+}
+
+model SceneAnswer {
+  id         String      @id @default(cuid())
+  session    GameSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  sessionId  String
+  sceneNo    Int // 1-5 幕
+  optionId   Int // 1-4 选项
+  decisionMs Int // 犹豫时长（毫秒）
+  freeText   String? // 预留自由回答
+
+  @@unique([sessionId, sceneNo])
+}
+
+model Report {
+  id          String      @id @default(cuid())
+  session     GameSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  sessionId   String      @unique
+  identity    String // 七种岛民 code，如 lighthouse
+  vector      String // JSON：维度得分
+  loveProfile String // 恋爱画像文案（LLM 或兜底）
+  tags        String // JSON：["#人间清醒", ...]
+  preview     String // “你会遇见谁”模糊预告钩子
+  createdAt   DateTime    @default(now())
+}
+
+// 登岛证 + 门槛偏好合一张表：双向判定只查这一张表
+model User {
+  id        String        @id @default(cuid())
+  sessionId String?       @unique
+  session   GameSession?  @relation("ClaimedSession", fields: [sessionId], references: [id])
+  nickname  String? // 种子用户代号；真实玩家默认匿名
+  avatar    String? // 捏脸配置 JSON 或 AI 头像（data URL / 路径）
+  email     String? @unique // 邮箱注册（无验证码）
+  passwordHash String? // bcrypt
+
+  // —— 登岛证 ——
+  gender    String // male / female
+  birthYear Int
+  city      String
+  education String // high_school / college / bachelor / master / phd
+  height    Int? // cm
+  intent    String? // serious / friends / expand
+
+  // —— 我的门槛偏好（判定对方用，双向生效）——
+  ageMin      Int
+  ageMax      Int
+  cityScope   String   @default("same_city") // same_city / any
+  eduReq      String   @default("none") // none / bachelor / master
+  heightMin   Int?
+  heightMax   Int?
+  intentMatch Boolean  @default(false)
+
+  createdAt DateTime @default(now())
+  likesSent Like[]   @relation("FromUser")
+  likesGot  Like[]   @relation("ToUser")
+  matchesA  Match[]  @relation("UserA")
+  matchesB  Match[]  @relation("UserB")
+  vaneAnswers VaneAnswer[]
+}
+
+model Like {
+  id         String   @id @default(cuid())
+  fromUserId String
+  toUserId   String
+  fromUser   User     @relation("FromUser", fields: [fromUserId], references: [id], onDelete: Cascade)
+  toUser     User     @relation("ToUser", fields: [toUserId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@unique([fromUserId, toUserId]) // 双向判定查这张表
+}
+
+model Match {
+  id          String      @id @default(cuid())
+  userAId     String // 约定 userAId < userBId
+  userBId     String
+  userA       User        @relation("UserA", fields: [userAId], references: [id])
+  userB       User        @relation("UserB", fields: [userBId], references: [id])
+  score       Int // 相遇指数 0-100
+  narrative   String // LLM 相遇叙事
+  fogContrast String // JSON：迷雾夜对照 {aOption,bOption,verdict}
+  createdAt   DateTime    @default(now())
+  invitation  Invitation?
+
+  @@unique([userAId, userBId])
+}
+
+// 游戏广场（vane 剧情游戏）的选择记录：重合度匹配的原始数据
+model VaneAnswer {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  gameKey   String // 剧情 JSON 的 id
+  nodeId    String // choice 节点 id
+  optionId  String // 选项 id（男女一致，保证可比）
+  createdAt DateTime @default(now())
+
+  @@unique([userId, gameKey, nodeId])
+}
+
+model Activity {
+  id          Int          @id @default(autoincrement())
+  title       String
+  timeDesc    String
+  place       String
+  icebreak    String // 终章任务预告
+  fitTags     String // JSON：适配人格标签，推荐/轮换用
+  invitations Invitation[]
+}
+
+model Invitation {
+  id            String    @id @default(cuid())
+  matchId       String    @unique
+  match         Match     @relation(fields: [matchId], references: [id])
+  initiatorId   String
+  activityId    Int
+  activity      Activity  @relation(fields: [activityId], references: [id])
+  inviteText    String // AI 邀请语，可编辑
+  status        String    @default("sent") // sent / accepted / counter / declined / locked
+  counterReason String? // TA“换一个”时附的理由
+  round         Int       @default(1)
+  updatedAt     DateTime  @updatedAt
+}

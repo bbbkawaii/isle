@@ -1,0 +1,81 @@
+{
+  "id": "values",
+  "name": "三观碰撞",
+  "description": "如果你们一起中了大奖，会怎么花？这个选择会暴露你们的金钱观。来测试你们的价值观是否合拍。",
+  "cover": "💎",
+  "start_node": "v1",
+  "nodes": {
+    "v1": {
+      "type": "dialog",
+      "speaker": {"male": "旁白", "female": "旁白"},
+      "text": {"male": "某天，你和ta一起买的彩票竟然中了一百万！奖金打到账上的那一刻，你们面面相觑。", "female": "某天，你和ta一起买的彩票竟然中了一百万！奖金打到账上的那一刻，你们面面相觑。"},
+      "next": "v2_choice"
+    },
+    "v2_choice": {
+      "type": "choice",
+      "speaker": {"male": "ta", "female": "ta"},
+      "text": {"male": "这笔钱，你觉得咱们应该怎么用？", "female": "这笔钱，你觉得咱们应该怎么用？"},
+      "options": [
+        {"id": "A", "text": "存起来，未雨绸缪", "next": "v3a", "match_point": true},
+        {"id": "B", "text": "环游世界，享受当下", "next": "v3b", "match_point": true},
+        {"id": "C", "text": "投资创业，钱生钱", "next": "v3c", "match_point": true}
+      ]
+    },
+    "v3a": {
+      "type": "dialog",
+      "speaker": {"male": "旁白", "female": "旁白"},
+      "text": {"male": "你们把钱存进了定期账户。看着存折上的数字，心里踏实了不少。但ta似乎有点意犹未尽。", "female": "你们把钱存进了定期账户。看着存折上的数字，心里踏实了不少。但ta似乎有点意犹未尽。"},
+      "next": "v4_choice"
+    },
+    "v3b": {
+      "type": "dialog",
+      "speaker": {"male": "旁白", "female": "旁白"},
+      "text": {"male": "你们立刻订了环欧机票。收拾行李时兴奋得睡不着觉，朋友圈已经被你们刷屏了。", "female": "你们立刻订了环欧机票。收拾行李时兴奋得睡不着觉，朋友圈已经被你们刷屏了。"},
+      "next": "v4_choice"
+    },
+    "v3c": {
+      "type": "dialog",
+      "speaker": {"male": "旁白", "female": "旁白"},
+      "text": {"male": "你们注册了一家公司，租了办公室，开始忙碌起来。创业的路才刚开始。", "female": "你们注册了一家公司，租了办公室，开始忙碌起来。创业的路才刚开始。"},
+      "next": "v4_choice"
+    },
+    "v4_choice": {
+      "type": "choice",
+      "speaker": {"male": "ta", "female": "ta"},
+      "text": {"male": "说真的，你觉得工作和生活哪个更重要？", "female": "说真的，你觉得工作和生活哪个更重要？"},
+      "options": [
+        {"id": "A", "text": "工作至上，事业是立身之本", "next": "v5a", "match_point": true},
+        {"id": "B", "text": "生活为主，开心最重要", "next": "v5b", "match_point": true}
+      ]
+    },
+    "v5a": {
+      "type": "dialog",
+      "speaker": {"male": "旁白", "female": "旁白"},
+      "text": {"male": "你常常加班到深夜，ta有时会抱怨你陪伴太少。你们开始就这件事认真沟通。", "female": "你常常加班到深夜，ta有时会抱怨你陪伴太少。你们开始就这件事认真沟通。"},
+      "next": "v6_choice"
+    },
+    "v5b": {
+      "type": "dialog",
+      "speaker": {"male": "旁白", "female": "旁白"},
+      "text": {"male": "你坚持准时下班，把时间留给生活和彼此。有时项目紧张，你也会纠结这样的选择。", "female": "你坚持准时下班，把时间留给生活和彼此。有时项目紧张，你也会纠结这样的选择。"},
+      "next": "v6_choice"
+    },
+    "v6_choice": {
+      "type": "choice",
+      "speaker": {"male": "旁白", "female": "旁白"},
+      "text": {"male": "当伴侣和家庭意见相左时，你倾向于……", "female": "当伴侣和家庭意见相左时，你倾向于……"},
+      "options": [
+        {"id": "A", "text": "以伴侣为重", "next": "end_partner", "match_point": true},
+        {"id": "B", "text": "以家庭为重", "next": "end_family", "match_point": true}
+      ]
+    },
+    "end_partner": {
+      "type": "ending",
+      "ending_title": {"male": "【结局·彼此为先】", "female": "【结局·彼此为先】"}
+    },
+    "end_family": {
+      "type": "ending",
+      "ending_title": {"male": "【结局·家族为本】", "female": "【结局·家族为本】"}
+    }
+  }
+}

@@ -1,0 +1,763 @@
+{
+  "id": "fenghou_night_10min_dual_role_demo_v3",
+  "name": "封后夜：两心同局（十分钟体验版）",
+  "description": "约十分钟的单人双角色宫廷权谋互动游戏。玩家在同一条时间线上交替替沈知微与“执灯人”完成八次关键选择，经历灯号异常、假令封门、隔墙协作、真相代价与天亮决断，最终进入五种世界结局。",
+  "cover": "🏮",
+  "start_node": "t00_01",
+  "question_count": 8,
+  "nodes": {
+    "t00_01": {
+      "type": "dialog",
+      "speaker": "旁白",
+      "text": "景昭三十一年，皇帝病重，储位未定。封后大典前夜，一道密令忽然传遍宫门：沈氏涉嫌谋逆，天亮前须收缴兵符、封锁内外。",
+      "next": "t00_02"
+    },
+    "t00_02": {
+      "type": "dialog",
+      "speaker": "玩法提示",
+      "text": "同一位玩家将沿一条不会回转的时间线，交替替待封后的沈知微与羽林校尉“执灯人”作答。你不是在选谁赢，而是在决定两个人怎样看待信任、证据和责任。",
+      "next": "t00_03"
+    },
+    "t00_03": {
+      "type": "dialog",
+      "speaker": "旁白",
+      "text": "两人没有结盟，只共享一套宫灯暗号。沈知微不知道父亲是否真的参与夺嫡；执灯人也不知道，今夜要守的是皇城秩序，还是有人伪装成秩序的野心。",
+      "next": "q1_scene"
+    },
+    "q1_scene": {
+      "type": "dialog",
+      "speaker": "旁白",
+      "text": "【第一幕·灯灭】戌时，沈知微赴宴途中发现：约定代表“宫门安全”的第五盏灯灭了。灯架下有新鲜蜡痕，楼梯口的脚步声正快速逼近。",
+      "next": "q1"
+    },
+    "q1": {
+      "type": "choice",
+      "speaker": "沈知微",
+      "text": "你先如何处理这处异常？",
+      "options": [
+        {
+          "id": "q1_a",
+          "text": "叫住守灯内侍，当场追问谁来过",
+          "next": "q1_result_a",
+          "match_point": false
+        },
+        {
+          "id": "q1_b",
+          "text": "重新点灯，同时检查灯座",
+          "next": "q1_result_b",
+          "match_point": false
+        },
+        {
+          "id": "q1_c",
+          "text": "藏入暗处，先观察来人",
+          "next": "q1_result_c",
+          "match_point": false
+        },
+        {
+          "id": "q1_d",
+          "text": "维持表面平静，直接前往宴殿",
+          "next": "q1_result_d",
+          "match_point": false
+        }
+      ]
+    },
+    "q1_result_a": {
+      "type": "dialog",
+      "speaker": "旁白",
+      "text": "内侍被迫说出：崔总管刚以更换灯油为名上过角楼。脚步停在门外，设局者也知道你发现了异常。",
+      "next": "q2_scene"
+    },
+    "q1_result_b": {
+      "type": "dialog",
+      "speaker": "旁白",
+      "text": "你在灯座里找到半枚沾蜡的玄色封签。第五盏灯重新亮起，但远处东门已经开始换防。",
+      "next": "q2_scene"
+    },
+    "q1_result_c": {
+      "type": "dialog",
+      "speaker": "旁白",
+      "text": "崔总管登楼确认灯灭，低声提到“东门照旧”。你没有暴露，却只来得及记住这句接头暗语。",
+      "next": "q2_scene"
+    },
+    "q1_result_d": {
+      "type": "dialog",
+      "speaker": "旁白",
+      "text": "你没有打草惊蛇，只把灭灯时辰记在心里。下楼时，你听见有人在身后急着重新确认灯号。",
+      "next": "q2_scene"
+    },
+    "q2_scene": {
+      "type": "dialog",
+      "speaker": "旁白",
+      "text": "东宫门上，执灯人看见第五盏灯忽明忽暗。与此同时，一封加盖御玺的手令送到：沈氏谋逆，立刻封门；可传令人口令用的却是三日前旧序。",
+      "next": "q2"
+    },
+    "q2": {
+      "type": "choice",
+      "speaker": "执灯人",
+      "text": "你怎样处理这道真假难辨的命令？",
+      "options": [
+        {
+          "id": "q2_a",
+          "text": "公开暂缓执行，要求三司会签",
+          "next": "q2_result_a",
+          "match_point": true
+        },
+        {
+          "id": "q2_b",
+          "text": "表面领命，暗留一条平民撤离侧道",
+          "next": "q2_result_b",
+          "match_point": true
+        },
+        {
+          "id": "q2_c",
+          "text": "先封门，再核验纸墨、口令和用印时辰",
+          "next": "q2_result_c",
+          "match_point": true
+        },
+        {
+          "id": "q2_d",
+          "text": "照令执行，不做额外判断",
+          "next": "q2_result_d",
+          "match_point": true
+        }
+      ]
+    },
+    "q2_result_a": {
+      "type": "dialog",
+      "speaker": "旁白",
+      "text": "你把争议摆到众目之下，暂时保住东门，也让发令者知道你已经介入。传令人转身前，袖口露出太后佛堂的香灰。",
+      "next": "q3_scene"
+    },
+    "q2_result_b": {
+      "type": "dialog",
+      "speaker": "旁白",
+      "text": "正门落锁，但低阶宫人与百姓仍有退路。你没有宣告站队，只先控制最不可逆的伤亡。",
+      "next": "q3_scene"
+    },
+    "q2_result_c": {
+      "type": "dialog",
+      "speaker": "旁白",
+      "text": "程序继续运转，核验也同时开始。亲信很快回报：手令上的龙涎香来自太后佛堂，并非御前。",
+      "next": "q3_scene"
+    },
+    "q2_result_d": {
+      "type": "dialog",
+      "speaker": "旁白",
+      "text": "宫门迅速封闭，秩序看似恢复。可换防名单里多出七名陌生军士，你意识到“服从”本身也可能被利用。",
+      "next": "q3_scene"
+    },
+    "q3_scene": {
+      "type": "dialog",
+      "speaker": "旁白",
+      "text": "【第二幕·隔墙】含章殿内，沈知微被假传口谕扣在偏殿。她只剩一次传信机会，且不能确定执灯人是否相信自己。",
+      "next": "q3"
+    },
+    "q3": {
+      "type": "choice",
+      "speaker": "沈知微",
+      "text": "如果只能让他听懂一件事，你会传出什么？",
+      "options": [
+        {
+          "id": "q3_a",
+          "text": "“先相信我，证据随后给你。”",
+          "next": "q3_result_a",
+          "match_point": true
+        },
+        {
+          "id": "q3_b",
+          "text": "“别先救我，保护证人和可能被牵连的人。”",
+          "next": "q3_result_b",
+          "match_point": true
+        },
+        {
+          "id": "q3_c",
+          "text": "“查清父亲是否真的参与谋逆，结果不必偏向我。”",
+          "next": "q3_result_c",
+          "match_point": true
+        },
+        {
+          "id": "q3_d",
+          "text": "“给我一个出口，但最后怎么做由我决定。”",
+          "next": "q3_result_d",
+          "match_point": true
+        }
+      ]
+    },
+    "q3_result_a": {
+      "type": "dialog",
+      "speaker": "旁白",
+      "text": "你先索取信任，只留下一句暗号：第五盏灯不是我灭的。",
+      "next": "q4_scene"
+    },
+    "q3_result_b": {
+      "type": "dialog",
+      "speaker": "旁白",
+      "text": "你把自己的安危放在后面，附上宫女、内侍与东门百姓可能被灭口的名单。",
+      "next": "q4_scene"
+    },
+    "q3_result_c": {
+      "type": "dialog",
+      "speaker": "旁白",
+      "text": "你承认自己也不知道全部真相，并允许调查伤害自己的家族立场。",
+      "next": "q4_scene"
+    },
+    "q3_result_d": {
+      "type": "dialog",
+      "speaker": "旁白",
+      "text": "你需要行动空间而非代替决策，信中写明偏殿守卫换班只有半刻钟。",
+      "next": "q4_scene"
+    },
+    "q4_scene": {
+      "type": "dialog",
+      "speaker": "旁白",
+      "text": "执灯人收到残缺信号时，第二道命令也到了：打开东门，让摄政王的“护驾军”入宫。城外火把逼近，他必须同时回应沈知微与眼前的兵变。",
+      "next": "q4"
+    },
+    "q4": {
+      "type": "choice",
+      "speaker": "执灯人",
+      "text": "你怎样回应她，也怎样守住宫门？",
+      "options": [
+        {
+          "id": "q4_a",
+          "text": "先回问她的底线，同时用会签程序拖住开门令",
+          "next": "q4_result_a",
+          "match_point": true
+        },
+        {
+          "id": "q4_b",
+          "text": "立刻调开偏殿守卫，并把护驾军引入可封锁的瓮城",
+          "next": "q4_result_b",
+          "match_point": true
+        },
+        {
+          "id": "q4_c",
+          "text": "暂不承诺营救，先核验手令并疏散无辜者",
+          "next": "q4_result_c",
+          "match_point": true
+        },
+        {
+          "id": "q4_d",
+          "text": "把信号和开门令一并上报统领，等待正式决定",
+          "next": "q4_result_d",
+          "match_point": true
+        }
+      ]
+    },
+    "q4_result_a": {
+      "type": "dialog",
+      "speaker": "旁白",
+      "text": "你没有替她定义需求，也没有让护驾军无声入宫。短短一句“最不能接受的结果是什么”，为合作留下了协商空间。",
+      "next": "q5_scene"
+    },
+    "q4_result_b": {
+      "type": "dialog",
+      "speaker": "旁白",
+      "text": "你用强行动表达相信。她得到逃离窗口，第一队骑兵也被困住；若判断错误，两项责任都将落在你身上。",
+      "next": "q5_scene"
+    },
+    "q4_result_c": {
+      "type": "dialog",
+      "speaker": "旁白",
+      "text": "你把可验证的事实和不可逆的生命放在前面。她仍被困住，却看到东门侧道亮起了代表“已收到”的灯。",
+      "next": "q5_scene"
+    },
+    "q4_result_d": {
+      "type": "dialog",
+      "speaker": "旁白",
+      "text": "你守住组织边界，也失去时间。偏殿守卫很快被替换，护驾军则以“军情紧急”为由继续逼门。",
+      "next": "q5_scene"
+    },
+    "q5_scene": {
+      "type": "dialog",
+      "speaker": "旁白",
+      "text": "【第三幕·真相有价】沈知微在旧琴腹中找到母亲密函：太后曾授意沈父私养死士，沈父后来拒绝逼宫；而今夜的假令正借这桩旧罪发动新兵变。公开它能破局，也会坐实沈家的罪。",
+      "next": "q5"
+    },
+    "q5": {
+      "type": "choice",
+      "speaker": "沈知微",
+      "text": "你怎样交出这份会同时伤害自己与对手的证据？",
+      "options": [
+        {
+          "id": "q5_a",
+          "text": "把原件完整交给执灯人，由他独立判断",
+          "next": "q5_result_a",
+          "match_point": true
+        },
+        {
+          "id": "q5_b",
+          "text": "只抄出能证明今夜假令的段落",
+          "next": "q5_result_b",
+          "match_point": true
+        },
+        {
+          "id": "q5_c",
+          "text": "先找第二来源核验，再决定公开范围",
+          "next": "q5_result_c",
+          "match_point": true
+        },
+        {
+          "id": "q5_d",
+          "text": "立即让多人抄录并公开，防止密函被销毁",
+          "next": "q5_result_d",
+          "match_point": true
+        }
+      ]
+    },
+    "q5_result_a": {
+      "type": "dialog",
+      "speaker": "旁白",
+      "text": "你连最不利于沈家的部分也没有删。密函离手后，你失去控制叙事的权力，却让自己的陈述更可信。",
+      "next": "q6_scene"
+    },
+    "q5_result_b": {
+      "type": "dialog",
+      "speaker": "旁白",
+      "text": "你保住家族最后一道防线，也让证据留下明显缺口。对方必须判断你究竟省略了什么。",
+      "next": "q6_scene"
+    },
+    "q5_result_c": {
+      "type": "dialog",
+      "speaker": "旁白",
+      "text": "你不把母亲的字迹直接等同事实，转而寻找用香记录、御玺登记与当年名册。真相更稳，时间却更少。",
+      "next": "q6_scene"
+    },
+    "q5_result_d": {
+      "type": "dialog",
+      "speaker": "旁白",
+      "text": "假令迅速受到质疑，沈父私养死士的部分也同时传开。你阻止了秘密交易，也彻底失去回旋余地。",
+      "next": "q6_scene"
+    },
+    "q6_scene": {
+      "type": "dialog",
+      "speaker": "旁白",
+      "text": "密函以完整、残缺或传闻的形式抵达执灯人手中。与此同时，小内侍阿榆愿意证明御玺被借出，但姐姐被扣；存放用印册的文渊阁也起了火。",
+      "next": "q6"
+    },
+    "q6": {
+      "type": "choice",
+      "speaker": "执灯人",
+      "text": "证人、物证和时机无法全部保住，你先怎样行动？",
+      "options": [
+        {
+          "id": "q6_a",
+          "text": "先救阿榆姐弟，把证言交御史封存",
+          "next": "q6_result_a",
+          "match_point": true
+        },
+        {
+          "id": "q6_b",
+          "text": "先抢出用印册，再公开已经掌握的证据",
+          "next": "q6_result_b",
+          "match_point": true
+        },
+        {
+          "id": "q6_c",
+          "text": "与沈知微分工：一人救证人，一人保物证",
+          "next": "q6_result_c",
+          "match_point": true
+        },
+        {
+          "id": "q6_d",
+          "text": "用密函与对方谈判，换取停火和释放证人",
+          "next": "q6_result_d",
+          "match_point": true
+        }
+      ]
+    },
+    "q6_result_a": {
+      "type": "dialog",
+      "speaker": "旁白",
+      "text": "你不让孩子成为唯一靶点。登记册大半烧毁，但阿榆说出了御玺缺口与经手人的名字。",
+      "next": "q7_scene"
+    },
+    "q6_result_b": {
+      "type": "dialog",
+      "speaker": "旁白",
+      "text": "你拿到御玺出入的关键页，却错过最安全的救人时机。纸面证据更强，证人承担的代价也更重。",
+      "next": "q7_scene"
+    },
+    "q6_result_c": {
+      "type": "dialog",
+      "speaker": "旁白",
+      "text": "你没有独自决定全部优先级。两边都只保住一部分，却没有任何一方被排除在责任之外。",
+      "next": "q7_scene"
+    },
+    "q6_result_d": {
+      "type": "dialog",
+      "speaker": "旁白",
+      "text": "你用尚未公开的真相换来一刻钟喘息，也暴露自己掌握了多少。谈判有效，却可能被反咬为勒索。",
+      "next": "q7_scene"
+    },
+    "q7_scene": {
+      "type": "dialog",
+      "speaker": "旁白",
+      "text": "【第四幕·天亮以前】卯时，皇帝仍未露面，三方军士在含章殿外对峙。假令已基本坐实，沈家的旧罪也无法抹去。沈知微得到最后一次发言机会。",
+      "next": "q7"
+    },
+    "q7": {
+      "type": "choice",
+      "speaker": "沈知微",
+      "text": "你选择怎样结束这场封后夜？",
+      "options": [
+        {
+          "id": "q7_a",
+          "text": "公开全部证据，请御史同时审理沈家、假令与兵变",
+          "next": "q7_result_a",
+          "match_point": true
+        },
+        {
+          "id": "q7_b",
+          "text": "放弃后位与沈家兵权，换取停兵和独立调查",
+          "next": "q7_result_b",
+          "match_point": true
+        },
+        {
+          "id": "q7_c",
+          "text": "先承认沈家旧罪，再把今夜假令单独追责",
+          "next": "q7_result_c",
+          "match_point": true
+        },
+        {
+          "id": "q7_d",
+          "text": "拒绝一夜定罪，将旧案、假令、兵变拆成三案",
+          "next": "q7_result_d",
+          "match_point": true
+        },
+        {
+          "id": "q7_e",
+          "text": "焚毁各方争夺的私人密函，只保留已封存的事实记录",
+          "next": "q7_result_e",
+          "match_point": true
+        }
+      ]
+    },
+    "q7_result_a": {
+      "type": "dialog",
+      "speaker": "旁白",
+      "text": "沈知微打开殿门，先报出沈家私养死士之罪，再陈述假令与兵变的证据。没有人还能只审自己想审的那一半。",
+      "next": "q8_a"
+    },
+    "q7_result_b": {
+      "type": "dialog",
+      "speaker": "旁白",
+      "text": "沈知微摘下凤簪，将沈家兵符放到案上：后位可以不要，兵权可以交出，但证据必须由御史封存，涉案者七日后公开受审。",
+      "next": "q8_b"
+    },
+    "q7_result_c": {
+      "type": "dialog",
+      "speaker": "旁白",
+      "text": "沈知微承认父亲越过律法，也说明拒绝逼宫不能抹去旧罪；随后，她要求把今夜伪造手令者作为新的行为人单独审理。",
+      "next": "q8_c"
+    },
+    "q7_result_d": {
+      "type": "dialog",
+      "speaker": "旁白",
+      "text": "沈知微并排放下三卷案宗：沈氏旧案、伪令案、宫门兵变案。她拒绝用一个仓促结论替任何人洗白，也拒绝让一族替所有野心顶罪。",
+      "next": "q8_d"
+    },
+    "q7_result_e": {
+      "type": "dialog",
+      "speaker": "旁白",
+      "text": "沈知微点燃母亲密函，只留下御史已经封存的记录。她不再用家族秘密换取权力，也承担毁去关键证物的责任。",
+      "next": "q8_e"
+    },
+    "q8_a": {
+      "type": "choice",
+      "speaker": "执灯人",
+      "text": "她选择让全部事实进入公开审判。作为执灯人，你怎样接住这个会同时审判你们两人的决定？",
+      "options": [
+        {
+          "id": "q8_a_a",
+          "text": "公开站到她身边，与你掌握的证据一起接受审查",
+          "next": "q8_a_result_a",
+          "match_point": false
+        },
+        {
+          "id": "q8_a_b",
+          "text": "留在侧后方补齐证据，让她独立完成自己的决定",
+          "next": "q8_a_result_b",
+          "match_point": false
+        },
+        {
+          "id": "q8_a_c",
+          "text": "当场指出方案的漏洞，即使这会让她难堪",
+          "next": "q8_a_result_c",
+          "match_point": false
+        },
+        {
+          "id": "q8_a_d",
+          "text": "交还兵权，只按公开程序提供证词与保护",
+          "next": "q8_a_result_d",
+          "match_point": false
+        }
+      ]
+    },
+    "q8_a_result_a": {
+      "type": "dialog",
+      "speaker": "旁白",
+      "text": "你解下佩刀与巡防令，走到她身侧。你们不互相担保无罪，只共同保证证据不被带走。天亮时，含章殿第一次真正像一座公堂。",
+      "next": "end_a"
+    },
+    "q8_a_result_b": {
+      "type": "dialog",
+      "speaker": "旁白",
+      "text": "你没有抢走她的话语，只送上用印记录、旧口令和封存证词。她独自完成陈述，却知道每一句可验证的话都有出处。",
+      "next": "end_a"
+    },
+    "q8_a_result_c": {
+      "type": "dialog",
+      "speaker": "旁白",
+      "text": "你指出全面公开会立即暴露阿榆姐弟。她暂停陈述，先转移证人；你们保留分歧，也让决定因此更完整。",
+      "next": "end_a"
+    },
+    "q8_a_result_d": {
+      "type": "dialog",
+      "speaker": "旁白",
+      "text": "你交还兵权，以被调查者身份进入御史席。你们不再用私人信任证明彼此，而让同一套程序检查所有人。",
+      "next": "end_a"
+    },
+    "q8_b": {
+      "type": "choice",
+      "speaker": "执灯人",
+      "text": "她用后位与兵权交换停兵。你怎样回应这个把个人筹码推到桌面的决定？",
+      "options": [
+        {
+          "id": "q8_b_a",
+          "text": "公开站到她身边，与你掌握的证据一起接受审查",
+          "next": "q8_b_result_a",
+          "match_point": false
+        },
+        {
+          "id": "q8_b_b",
+          "text": "留在侧后方补齐证据，让她独立完成自己的决定",
+          "next": "q8_b_result_b",
+          "match_point": false
+        },
+        {
+          "id": "q8_b_c",
+          "text": "当场指出方案的漏洞，即使这会让她难堪",
+          "next": "q8_b_result_c",
+          "match_point": false
+        },
+        {
+          "id": "q8_b_d",
+          "text": "交还兵权，只按公开程序提供证词与保护",
+          "next": "q8_b_result_d",
+          "match_point": false
+        }
+      ]
+    },
+    "q8_b_result_a": {
+      "type": "dialog",
+      "speaker": "旁白",
+      "text": "你公开交还东门兵符，与她一同接受停职。两份权力凭证并排放下，使停兵不再只是她单方面的牺牲。",
+      "next": "end_b"
+    },
+    "q8_b_result_b": {
+      "type": "dialog",
+      "speaker": "旁白",
+      "text": "你确认御史封条、证人去向和七日后开审的时辰。她换来停兵，你让承诺留下可以追踪的痕迹。",
+      "next": "end_b"
+    },
+    "q8_b_result_c": {
+      "type": "dialog",
+      "speaker": "旁白",
+      "text": "你指出对方可能收下兵权后反悔，要求先释放证人并撤走护驾军。她接受纠偏，交换变成了有约束的协议。",
+      "next": "end_b"
+    },
+    "q8_b_result_d": {
+      "type": "dialog",
+      "speaker": "旁白",
+      "text": "你退出谈判桌，只提交自己知道的事实。你尊重她如何使用个人利益，也保留自己不被关系裹挟的边界。",
+      "next": "end_b"
+    },
+    "q8_c": {
+      "type": "choice",
+      "speaker": "执灯人",
+      "text": "她先承认沈家旧罪，再追究今夜假令。你怎样回应她主动交出不利事实的选择？",
+      "options": [
+        {
+          "id": "q8_c_a",
+          "text": "公开站到她身边，与你掌握的证据一起接受审查",
+          "next": "q8_c_result_a",
+          "match_point": false
+        },
+        {
+          "id": "q8_c_b",
+          "text": "留在侧后方补齐证据，让她独立完成自己的决定",
+          "next": "q8_c_result_b",
+          "match_point": false
+        },
+        {
+          "id": "q8_c_c",
+          "text": "当场指出方案的漏洞，即使这会让她难堪",
+          "next": "q8_c_result_c",
+          "match_point": false
+        },
+        {
+          "id": "q8_c_d",
+          "text": "交还兵权，只按公开程序提供证词与保护",
+          "next": "q8_c_result_d",
+          "match_point": false
+        }
+      ]
+    },
+    "q8_c_result_a": {
+      "type": "dialog",
+      "speaker": "旁白",
+      "text": "你站到她身旁，承认自己的巡防签名也曾被盗用。你们都不再用“被陷害”抹去曾经放松过的警惕。",
+      "next": "end_c"
+    },
+    "q8_c_result_b": {
+      "type": "dialog",
+      "speaker": "旁白",
+      "text": "你逐项补上纸墨、用香与口令证据，不替沈家辩白，只证明今夜确有人利用旧罪发动新罪。",
+      "next": "end_c"
+    },
+    "q8_c_result_c": {
+      "type": "dialog",
+      "speaker": "旁白",
+      "text": "你反对她以个人身份背下全族责任，要求逐人定责。她撤回笼统请罪，第一次把责任写成具体行为与名字。",
+      "next": "end_c"
+    },
+    "q8_c_result_d": {
+      "type": "dialog",
+      "speaker": "旁白",
+      "text": "你按程序登记证词，与她保持公开距离。关系没有被宣告，却因彼此允许真相伤害自己而留下继续了解的可能。",
+      "next": "end_c"
+    },
+    "q8_d": {
+      "type": "choice",
+      "speaker": "执灯人",
+      "text": "她拒绝一夜翻案，要把三件事拆开追查。你怎样回应这个漫长而不讨好的方案？",
+      "options": [
+        {
+          "id": "q8_d_a",
+          "text": "公开站到她身边，与你掌握的证据一起接受审查",
+          "next": "q8_d_result_a",
+          "match_point": false
+        },
+        {
+          "id": "q8_d_b",
+          "text": "留在侧后方补齐证据，让她独立完成自己的决定",
+          "next": "q8_d_result_b",
+          "match_point": false
+        },
+        {
+          "id": "q8_d_c",
+          "text": "当场指出方案的漏洞，即使这会让她难堪",
+          "next": "q8_d_result_c",
+          "match_point": false
+        },
+        {
+          "id": "q8_d_d",
+          "text": "交还兵权，只按公开程序提供证词与保护",
+          "next": "q8_d_result_d",
+          "match_point": false
+        }
+      ]
+    },
+    "q8_d_result_a": {
+      "type": "dialog",
+      "speaker": "旁白",
+      "text": "你公开支持分案，也自请成为兵变案的被询问人。你们选择的不是立刻洗清，而是一起留在漫长调查中。",
+      "next": "end_d"
+    },
+    "q8_d_result_b": {
+      "type": "dialog",
+      "speaker": "旁白",
+      "text": "你分别封存三条证据链，避免案件互相污染。她负责提出问题，你负责让问题不会在程序里悄悄消失。",
+      "next": "end_d"
+    },
+    "q8_d_result_c": {
+      "type": "dialog",
+      "speaker": "旁白",
+      "text": "你指出继续调查会给对方毁证时间，要求羁押最可能灭口的人。她同意临时措施，但坚持写明理由与期限。",
+      "next": "end_d"
+    },
+    "q8_d_result_d": {
+      "type": "dialog",
+      "speaker": "旁白",
+      "text": "你交还现场指挥，只保留证人保护职责。你不承诺永远站在她一边，只承诺调查结束前不让人因说真话而死。",
+      "next": "end_d"
+    },
+    "q8_e": {
+      "type": "choice",
+      "speaker": "执灯人",
+      "text": "她烧掉了最能左右各方的私人密函。你怎样回应这个放弃强筹码、也损失证据的决定？",
+      "options": [
+        {
+          "id": "q8_e_a",
+          "text": "公开站到她身边，与你掌握的证据一起接受审查",
+          "next": "q8_e_result_a",
+          "match_point": false
+        },
+        {
+          "id": "q8_e_b",
+          "text": "留在侧后方补齐证据，让她独立完成自己的决定",
+          "next": "q8_e_result_b",
+          "match_point": false
+        },
+        {
+          "id": "q8_e_c",
+          "text": "当场指出方案的漏洞，即使这会让她难堪",
+          "next": "q8_e_result_c",
+          "match_point": false
+        },
+        {
+          "id": "q8_e_d",
+          "text": "交还兵权，只按公开程序提供证词与保护",
+          "next": "q8_e_result_d",
+          "match_point": false
+        }
+      ]
+    },
+    "q8_e_result_a": {
+      "type": "dialog",
+      "speaker": "旁白",
+      "text": "你走到火盆旁，交出自己保留的抄件。你们共同失去捷径，也共同接受今后只能凭公开证据说服别人。",
+      "next": "end_e"
+    },
+    "q8_e_result_b": {
+      "type": "dialog",
+      "speaker": "旁白",
+      "text": "你把核验笔记交给御史封存。她烧掉秘密控制人的力量，你保留事实仍可被检查的部分。",
+      "next": "end_e"
+    },
+    "q8_e_result_c": {
+      "type": "dialog",
+      "speaker": "旁白",
+      "text": "你当场反对焚证，指出私人秘密也可能是受害者唯一的证明。她承认决定不可逆，也接受公开记录毁证责任。",
+      "next": "end_e"
+    },
+    "q8_e_result_d": {
+      "type": "dialog",
+      "speaker": "旁白",
+      "text": "你依法记录她毁损证物，没有因为理解动机而免去后果。她接受问责，你们的关系也从偏袒中退开。",
+      "next": "end_e"
+    },
+    "end_a": {
+      "type": "ending",
+      "ending_title": "灯照金殿"
+    },
+    "end_b": {
+      "type": "ending",
+      "ending_title": "玉阶留白"
+    },
+    "end_c": {
+      "type": "ending",
+      "ending_title": "城门未闭"
+    },
+    "end_d": {
+      "type": "ending",
+      "ending_title": "长夜分灯"
+    },
+    "end_e": {
+      "type": "ending",
+      "ending_title": "山河失卷"
+    }
+  },
+  "dual_role": true
+}

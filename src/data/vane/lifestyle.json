@@ -1,0 +1,74 @@
+{
+  "id": "lifestyle",
+  "name": "周末默契",
+  "description": "一个普通的周末，你们会如何度过？生活里的小选择，最能看出两个人合不合拍。",
+  "cover": "☀️",
+  "start_node": "l1",
+  "nodes": {
+    "l1": {
+      "type": "dialog",
+      "speaker": {"male": "旁白", "female": "旁白"},
+      "text": {"male": "周六清晨，阳光透过窗帘洒进来。你睁开眼，看到ta还在熟睡。这是一个属于你们的周末。", "female": "周六清晨，阳光透过窗帘洒进来。你睁开眼，看到ta还在熟睡。这是一个属于你们的周末。"},
+      "next": "l2_choice"
+    },
+    "l2_choice": {
+      "type": "choice",
+      "speaker": {"male": "旁白", "female": "旁白"},
+      "text": {"male": "早餐时间到了，你想……", "female": "早餐时间到了，你想……"},
+      "options": [
+        {"id": "A", "text": "亲手做一顿早餐", "next": "l3a", "match_point": true},
+        {"id": "B", "text": "点外卖，多睡会儿", "next": "l3b", "match_point": true}
+      ]
+    },
+    "l3a": {
+      "type": "dialog",
+      "speaker": {"male": "旁白", "female": "旁白"},
+      "text": {"male": "你轻手轻脚下了床，在厨房忙活起来。煎蛋、烤吐司、冲咖啡的香气飘进卧室，ta被香味唤醒。", "female": "你轻手轻脚下了床，在厨房忙活起来。煎蛋、烤吐司、冲咖啡的香气飘进卧室，ta被香味唤醒。"},
+      "next": "l4_choice"
+    },
+    "l3b": {
+      "type": "dialog",
+      "speaker": {"male": "旁白", "female": "旁白"},
+      "text": {"male": "你摸出手机点了份外卖，然后翻个身又睡了个回笼觉。等外卖送到时，阳光已经铺满整张床。", "female": "你摸出手机点了份外卖，然后翻个身又睡了个回笼觉。等外卖送到时，阳光已经铺满整张床。"},
+      "next": "l4_choice"
+    },
+    "l4_choice": {
+      "type": "choice",
+      "speaker": {"male": "ta", "female": "ta"},
+      "text": {"male": "今天天气这么好，下午做点什么好呢？", "female": "今天天气这么好，下午做点什么好呢？"},
+      "options": [
+        {"id": "A", "text": "去公园野餐", "next": "l5a", "match_point": true},
+        {"id": "B", "text": "在家窝着看电影", "next": "l5b", "match_point": true}
+      ]
+    },
+    "l5a": {
+      "type": "dialog",
+      "speaker": {"male": "旁白", "female": "旁白"},
+      "text": {"male": "你们铺好野餐垫，躺在大树下。云朵慢慢飘过，远处有小孩在放风筝，一切都是周末该有的样子。", "female": "你们铺好野餐垫，躺在大树下。云朵慢慢飘过，远处有小孩在放风筝，一切都是周末该有的样子。"},
+      "next": "l6_choice"
+    },
+    "l5b": {
+      "type": "dialog",
+      "speaker": {"male": "旁白", "female": "旁白"},
+      "text": {"male": "你们裹着毯子窝在沙发上，一部接一部地刷电影。看到感动处，ta偷偷红了眼眶。", "female": "你们裹着毯子窝在沙发上，一部接一部地刷电影。看到感动处，ta偷偷红了眼眶。"},
+      "next": "l6_choice"
+    },
+    "l6_choice": {
+      "type": "choice",
+      "speaker": {"male": "旁白", "female": "旁白"},
+      "text": {"male": "晚上睡前，你想对ta说点什么？", "female": "晚上睡前，你想对ta说点什么？"},
+      "options": [
+        {"id": "A", "text": "认真说一句\"我爱你\"", "next": "end_sweet", "match_point": true},
+        {"id": "B", "text": "默默给ta盖好被子", "next": "end_silent", "match_point": true}
+      ]
+    },
+    "end_sweet": {
+      "type": "ending",
+      "ending_title": {"male": "【结局·甜言蜜语】", "female": "【结局·甜言蜜语】"}
+    },
+    "end_silent": {
+      "type": "ending",
+      "ending_title": {"male": "【结局·无声温柔】", "female": "【结局·无声温柔】"}
+    }
+  }
+}

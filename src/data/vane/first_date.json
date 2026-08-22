@@ -1,0 +1,119 @@
+{
+  "id": "first_date",
+  "name": "初次约会",
+  "description": "和心仪的人第一次约会，你会如何度过这一天？剧情有分支与合流，你的选择决定这一天的走向。",
+  "cover": "💕",
+  "start_node": "n1",
+  "nodes": {
+    "n1": {
+      "type": "dialog",
+      "speaker": {"male": "旁白", "female": "旁白"},
+      "text": {
+        "male": "今天是你和期待已久的她约会的日子。你提前到了餐厅门口，却发现门口排起了长长的队伍。",
+        "female": "今天是你和期待已久的他约会的日子。你精心打扮后赶到餐厅门口，却发现门口排起了长长的队伍。"
+      },
+      "next": "n2"
+    },
+    "n2": {
+      "type": "dialog",
+      "speaker": {"male": "她", "female": "他"},
+      "text": {"male": "哇，人好多啊……要不我们换一家？", "female": "人真不少啊，要不我们换一家？"},
+      "next": "n2_choice"
+    },
+    "n2_choice": {
+      "type": "choice",
+      "speaker": {"male": "旁白", "female": "旁白"},
+      "text": {"male": "到了约会地点，发现餐厅要排队，怎么办？", "female": "到了约会地点，发现餐厅要排队，怎么办？"},
+      "options": [
+        {"id": "A", "text": "继续排队等位", "next": "n3", "match_point": true},
+        {"id": "B", "text": "去附近其他餐厅", "next": "n4", "match_point": true}
+      ]
+    },
+    "n3": {
+      "type": "dialog",
+      "speaker": {"male": "旁白", "female": "旁白"},
+      "text": {"male": "你们决定排队等位。终于轮到你们了，服务员却态度冷淡，还把你们安排在靠厕所的角落。", "female": "你们决定排队等位。终于轮到你们了，服务员却态度冷淡，还把你们安排在靠厕所的角落。"},
+      "next": "n3b_choice"
+    },
+    "n3b_choice": {
+      "type": "choice",
+      "speaker": {"male": "旁白", "female": "旁白"},
+      "text": {"male": "服务员态度很差，座位也很糟糕，你要怎么做？", "female": "服务员态度很差，座位也很糟糕，你要怎么做？"},
+      "options": [
+        {"id": "A", "text": "礼貌地要求换座位", "next": "n6", "match_point": false},
+        {"id": "B", "text": "忍了，坐下再说", "next": "n6", "match_point": false}
+      ]
+    },
+    "n4": {
+      "type": "dialog",
+      "speaker": {"male": "旁白", "female": "旁白"},
+      "text": {"male": "你们换到了附近一家餐厅。刚坐下，邻桌一个小孩开始大哭大闹，吵得根本听不清对方说话。", "female": "你们换到了附近一家餐厅。刚坐下，邻桌一个小孩开始大哭大闹，吵得根本听不清对方说话。"},
+      "next": "n4b_choice"
+    },
+    "n4b_choice": {
+      "type": "choice",
+      "speaker": {"male": "旁白", "female": "旁白"},
+      "text": {"male": "邻桌小孩一直哭闹，影响用餐心情，怎么办？", "female": "邻桌小孩一直哭闹，影响用餐心情，怎么办？"},
+      "options": [
+        {"id": "A", "text": "请服务员帮忙协调", "next": "n6", "match_point": false},
+        {"id": "B", "text": "加快速度吃完走人", "next": "n6", "match_point": false}
+      ]
+    },
+    "n6": {
+      "type": "dialog",
+      "speaker": {"male": "旁白", "female": "旁白"},
+      "text": {"male": "无论午餐经历如何，你们都按原计划来到了游乐场。阳光正好，游乐场门口人来人往。", "female": "无论午餐经历如何，你们都按原计划来到了游乐场。阳光正好，游乐场门口人来人往。"},
+      "next": "n7_choice"
+    },
+    "n7_choice": {
+      "type": "choice",
+      "speaker": {"male": "她", "female": "他"},
+      "text": {"male": "先玩哪个项目呀？我想坐摩天轮！", "female": "先玩哪个项目呀？我想坐旋转木马！"},
+      "options": [
+        {"id": "A", "text": "陪ta坐摩天轮", "next": "n8a", "match_point": true},
+        {"id": "B", "text": "提议先玩旋转木马", "next": "n8b", "match_point": true}
+      ]
+    },
+    "n8a": {
+      "type": "dialog",
+      "speaker": {"male": "旁白", "female": "旁白"},
+      "text": {"male": "你们坐上了摩天轮。随着座舱缓缓升高，整座城市尽收眼底。夕阳把云朵染成橘红色，气氛恰到好处。", "female": "你们坐上了摩天轮。随着座舱缓缓升高，整座城市尽收眼底。夕阳把云朵染成橘红色，气氛恰到好处。"},
+      "next": "n9_choice"
+    },
+    "n8b": {
+      "type": "dialog",
+      "speaker": {"male": "旁白", "female": "旁白"},
+      "text": {"male": "你们玩起了旋转木马，像两个孩子一样笑个不停。下来时天色已暗，游乐场的灯饰亮了起来。", "female": "你们玩起了旋转木马，像两个孩子一样笑个不停。下来时天色已暗，游乐场的灯饰亮了起来。"},
+      "next": "n9_choice"
+    },
+    "n9_choice": {
+      "type": "choice",
+      "speaker": {"male": "旁白", "female": "旁白"},
+      "text": {"male": "夜色渐浓，接下来你想……", "female": "夜色渐浓，接下来你想……"},
+      "options": [
+        {"id": "A", "text": "带ta去看城市夜景", "next": "n10a", "match_point": true},
+        {"id": "B", "text": "送ta回家", "next": "n10b", "match_point": true}
+      ]
+    },
+    "n10a": {
+      "type": "dialog",
+      "speaker": {"male": "旁白", "female": "旁白"},
+      "text": {"male": "你们来到城市最高处的观景台。万家灯火在脚下铺开，风吹起ta的发丝。你们靠在栏杆上，谁也没说话，却觉得这就是最好的时刻。", "female": "你们来到城市最高处的观景台。万家灯火在脚下铺开，风把ta的头发吹得有些乱。你们靠在栏杆上，谁也没说话，却觉得这就是最好的时刻。"},
+      "next": "end_romantic"
+    },
+    "n10b": {
+      "type": "dialog",
+      "speaker": {"male": "旁白", "female": "旁白"},
+      "text": {"male": "你送ta走到家门口。ta转身告别时，认真地说了句\"今天很开心\"。夜色温柔，这一天的故事到这里告一段落。", "female": "ta送你走到家门口。你转身告别时，认真地说了句\"今天很开心\"。夜色温柔，这一天的故事到这里告一段落。"},
+      "next": "end_warm"
+    },
+    "end_romantic": {
+      "type": "ending",
+      "ending_title": {"male": "【结局·浪漫之夜】", "female": "【结局·浪漫之夜】"}
+    },
+    "end_warm": {
+      "type": "ending",
+      "ending_title": {"male": "【结局·温柔归途】", "female": "【结局·温柔归途】"}
+    }
+  }
+}
