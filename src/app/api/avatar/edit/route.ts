@@ -1,12 +1,9 @@
 import { NextResponse } from 'next/server'
-import { mkdir, writeFile } from 'fs/promises'
-import path from 'path'
-import { randomBytes } from 'crypto'
+import sharp from 'sharp'
 
 // POST /api/avatar/edit （multipart: photo）
-// 照片 → Qwen/Qwen-Image-Edit-2509 统一卡通风格转绘 → 存 public/avatars → 返回 URL
-// SiliconFlow 格式：POST {base}/images/generations，JSON 体 { model, image(dataURI), prompt, image_size }
-// 配置（.env.local）：AVATAR_BASE_URL / AVATAR_API_KEY / AVATAR_MODEL
+// 照片 → Qwen/Qwen-Image-Edit-2509 统一卡通风格转绘 → 返回 data URL（直接入库，本地/线上行为一致）
+// 配置（.env.local / Vercel 环境变量）：AVATAR_BASE_URL / AVATAR_API_KEY / AVATAR_MODEL
 // 未配置 key 返回 model_not_configured，前端降级到手动捏脸
 
 const STYLE_PROMPT =
@@ -53,12 +50,11 @@ export async function POST(req: Request) {
     if (!img.ok) return NextResponse.json({ error: 'download_failed' }, { status: 502 })
     const buf = Buffer.from(await img.arrayBuffer())
 
-    const dir = path.join(process.cwd(), 'public', 'avatars')
-    await mkdir(dir, { recursive: true })
-    const name = `av_${Date.now()}_${randomBytes(4).toString('hex')}.png`
-    await writeFile(path.join(dir, name), buf)
+    // 压到 512 JPEG（头像最大展示 88px，512 留足高清余量），data URL 存库
+    const small = await sharp(buf).resize(512, 512).jpeg({ quality: 85 }).toBuffer()
+    const dataUrl = `data:image/jpeg;base64,${small.toString('base64')}`
 
-    return NextResponse.json({ url: `/avatars/${name}` })
+    return NextResponse.json({ url: dataUrl })
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e)
     return NextResponse.json({ error: 'model_error', detail: msg.slice(0, 300) }, { status: 502 })
