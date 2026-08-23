@@ -1,0 +1,12 @@
+{
+  "name": "isle-vercel-proxy",
+  "main": "src/index.js",
+  "compatibility_date": "2026-08-23",
+  "workers_dev": true,
+  "routes": [
+    {
+      "pattern": "isle.aimuse.space",
+      "custom_domain": true
+    }
+  ]
+}
