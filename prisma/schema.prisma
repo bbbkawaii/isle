@@ -3,7 +3,8 @@
 // 切换 postgres 时可保持 String（代码统一走 JSON.parse），无需迁移。
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["relationJoins"]
 }
 
 datasource db {

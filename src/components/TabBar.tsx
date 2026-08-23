@@ -26,6 +26,7 @@ export default function TabBar() {
             <Link
               key={t.href}
               href={t.href}
+              prefetch={false}
               className={`flex flex-1 cursor-pointer flex-col items-center gap-0.5 rounded-full py-2 transition-all duration-200 ${
                 active ? 'bg-gradient-to-b from-[#ff8a70] to-[#f4553f] text-white shadow-[0_6px_16px_rgba(244,85,63,0.35)]' : 'text-ink-soft'
               }`}

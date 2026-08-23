@@ -15,7 +15,24 @@ const EDU_REQ: Record<string, number> = { none: 0, bachelor: 3, master: 4 }
 async function loadMe(id: string) {
   return prisma.user.findUnique({
     where: { id },
-    include: { session: { include: { answers: true, report: true } } },
+    relationLoadStrategy: 'join',
+    include: {
+      session: { include: { answers: true, report: true } },
+      vaneAnswers: true,
+      likesSent: { select: { toUserId: true } },
+      matchesA: {
+        include: {
+          invitation: { include: { activity: true } },
+          userB: { include: { session: { include: { report: true } } } },
+        },
+      },
+      matchesB: {
+        include: {
+          invitation: { include: { activity: true } },
+          userA: { include: { session: { include: { report: true } } } },
+        },
+      },
+    },
   })
 }
 
@@ -24,11 +41,14 @@ export async function GET(req: Request) {
   const userId = searchParams.get('userId')
   const sessionId = searchParams.get('sessionId')
 
-  let me: Awaited<ReturnType<typeof loadMe>> = null
-  if (userId) me = await loadMe(userId)
-  let sessionReportIdentity: string | null = null
-  if (sessionId) {
-    const session = await prisma.gameSession.findUnique({ where: { id: sessionId }, include: { report: true } })
+  const me = userId ? await loadMe(userId) : null
+  let sessionReportIdentity = me?.session?.id === sessionId ? me.session.report?.identity ?? null : null
+  if (sessionId && me?.session?.id !== sessionId) {
+    const session = await prisma.gameSession.findUnique({
+      where: { id: sessionId },
+      relationLoadStrategy: 'join',
+      include: { report: true },
+    })
     sessionReportIdentity = session?.report?.identity ?? null
   }
   const { stage, identity: identityCode } = resolveStage({ user: me, sessionReportIdentity })
@@ -39,6 +59,7 @@ export async function GET(req: Request) {
     // 新用户：一张试读卡
     const seeds = await prisma.user.findMany({
       where: { session: { deviceToken: { startsWith: 'seed-' } } },
+      relationLoadStrategy: 'join',
       include: { session: { include: { answers: true, report: true } } },
       take: 12,
     })
@@ -72,23 +93,28 @@ export async function GET(req: Request) {
 
   // —— registered：配对列表 + 关系卡 + 活动卡 ——
   const myAnswers = me.session.answers.map((a) => ({ sceneNo: a.sceneNo, optionId: a.optionId }))
-  const myVane = await prisma.vaneAnswer.findMany({ where: { userId: me.id } })
+  const myVane = me.vaneAnswers
+  const myMatches = [
+    ...me.matchesA.map(({ userB, ...match }) => ({ ...match, other: userB })),
+    ...me.matchesB.map(({ userA, ...match }) => ({ ...match, other: userA })),
+  ]
+  const excluded = new Set<string>([me.id, ...me.likesSent.map((l) => l.toUserId), ...myMatches.map((m) => m.other.id)])
 
-  const liked = await prisma.like.findMany({ where: { fromUserId: me.id }, select: { toUserId: true } })
-  const myMatches = await prisma.match.findMany({ where: { OR: [{ userAId: me.id }, { userBId: me.id }] } })
-  const excluded = new Set<string>([me.id, ...liked.map((l) => l.toUserId), ...myMatches.map((m) => (m.userAId === me.id ? m.userBId : m.userAId))])
-
-  const pool = await prisma.user.findMany({
-    where: {
-      id: { notIn: [...excluded] },
-      gender: me.gender === 'male' ? 'female' : 'male',
-      birthYear: { gte: me.ageMin, lte: me.ageMax, not: null },
-      ageMin: { lte: me.birthYear },
-      ageMax: { gte: me.birthYear },
-      ...(me.cityScope === 'same_city' ? { OR: [{ city: me.city }, { cityScope: 'any' }] } : {}),
-    },
-    include: { session: { include: { answers: true, report: true } }, vaneAnswers: true },
-  })
+  const [pool, activity] = await Promise.all([
+    prisma.user.findMany({
+      where: {
+        id: { notIn: [...excluded] },
+        gender: me.gender === 'male' ? 'female' : 'male',
+        birthYear: { gte: me.ageMin, lte: me.ageMax, not: null },
+        ageMin: { lte: me.birthYear },
+        ageMax: { gte: me.birthYear },
+        ...(me.cityScope === 'same_city' ? { OR: [{ city: me.city }, { cityScope: 'any' }] } : {}),
+      },
+      relationLoadStrategy: 'join',
+      include: { session: { include: { answers: true, report: true } }, vaneAnswers: true },
+    }),
+    prisma.activity.findFirst(),
+  ])
 
   res.matches = pool
     .filter((u) => {
@@ -115,19 +141,9 @@ export async function GET(req: Request) {
     })
     .sort((a, b) => b.score - a.score)
 
-  const m = myMatches.length
-    ? await prisma.match.findFirst({
-        where: { OR: [{ userAId: me!.id }, { userBId: me!.id }] },
-        orderBy: { createdAt: 'desc' },
-        include: {
-          invitation: { include: { activity: true } },
-          userA: { include: { session: { include: { report: true } } } },
-          userB: { include: { session: { include: { report: true } } } },
-        },
-      })
-    : null
+  const m = [...myMatches].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())[0]
   if (m) {
-    const other = m.userAId === me!.id ? m.userB : m.userA
+    const other = m.other
     res.relation = {
       matchId: m.id,
       score: m.score,
@@ -141,7 +157,6 @@ export async function GET(req: Request) {
     }
   }
 
-  const activity = await prisma.activity.findFirst()
   if (activity) {
     res.activity = { id: activity.id, title: activity.title, timeDesc: activity.timeDesc, place: activity.place, icebreak: activity.icebreak }
   }

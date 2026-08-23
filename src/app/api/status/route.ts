@@ -11,12 +11,17 @@ export async function GET(req: Request) {
   const user = userId
     ? await prisma.user.findUnique({
         where: { id: userId },
+        relationLoadStrategy: 'join',
         include: { session: { include: { report: true } } },
       })
     : null
-  let sessionReportIdentity: string | null = null
-  if (sessionId) {
-    const session = await prisma.gameSession.findUnique({ where: { id: sessionId }, include: { report: true } })
+  let sessionReportIdentity = user?.session?.id === sessionId ? user.session.report?.identity ?? null : null
+  if (sessionId && user?.session?.id !== sessionId) {
+    const session = await prisma.gameSession.findUnique({
+      where: { id: sessionId },
+      relationLoadStrategy: 'join',
+      include: { report: true },
+    })
     sessionReportIdentity = session?.report?.identity ?? null
   }
   return NextResponse.json(resolveStage({ user, sessionReportIdentity }))

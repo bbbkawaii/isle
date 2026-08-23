@@ -11,32 +11,38 @@ export async function GET(req: Request) {
 
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    include: { session: { include: { report: true } } },
+    relationLoadStrategy: 'join',
+    include: {
+      session: { include: { report: true } },
+      matchesA: {
+        include: {
+          userB: { include: { session: { include: { report: true } } } },
+          invitation: { include: { activity: true } },
+        },
+      },
+      matchesB: {
+        include: {
+          userA: { include: { session: { include: { report: true } } } },
+          invitation: { include: { activity: true } },
+        },
+      },
+      likesSent: {
+        orderBy: { createdAt: 'desc' },
+        include: { toUser: { include: { session: { include: { report: true } } } } },
+      },
+    },
   })
   if (!user) return NextResponse.json({ registered: false })
 
-  const matches = await prisma.match.findMany({
-    where: { OR: [{ userAId: user.id }, { userBId: user.id }] },
-    orderBy: { createdAt: 'desc' },
-    include: {
-      userA: { include: { session: { include: { report: true } } } },
-      userB: { include: { session: { include: { report: true } } } },
-      invitation: { include: { activity: true } },
-    },
-  })
+  const matches = [
+    ...user.matchesA.map(({ userB, ...match }) => ({ ...match, other: userB })),
+    ...user.matchesB.map(({ userA, ...match }) => ({ ...match, other: userA })),
+  ].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
 
   // 我发出的心动（对方还没心动 → 未配对）：等待态的落地展示
-  const matchedOtherIds = new Set(
-    matches.flatMap((m) => [m.userAId, m.userBId]).filter((id) => id !== user.id),
-  )
-  const myLikes = await prisma.like.findMany({
-    where: { fromUserId: user.id, toUserId: { notIn: [...matchedOtherIds] } },
-    orderBy: { createdAt: 'desc' },
-    include: {
-      toUser: { include: { session: { include: { report: true } } } },
-    },
-  })
-  const pendingLikes = myLikes
+  const matchedOtherIds = new Set(matches.map((m) => m.other.id))
+  const pendingLikes = user.likesSent
+    .filter((l) => !matchedOtherIds.has(l.toUserId))
     .filter((l) => l.toUser.session?.report)
     .map((l) => ({
       toUserId: l.toUserId,
@@ -69,7 +75,7 @@ export async function GET(req: Request) {
         }
       : null,
     matches: matches.map((m) => {
-      const other = m.userAId === user.id ? m.userB : m.userA
+      const other = m.other
       const otherIdentity = getIdentity(other.session!.report!.identity)!
       return {
         matchId: m.id,
