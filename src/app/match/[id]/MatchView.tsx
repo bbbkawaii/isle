@@ -108,7 +108,7 @@ export default function MatchView({ matchId, score, narrative, sides, verdict, k
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 1.35 }}
       >
-        <p className="mb-4 text-xs tracking-[0.25em] text-white/45">迷雾夜对照 · 第二幕</p>
+        <p className="mb-4 text-xs tracking-[0.25em] text-white/45">迷雾夜对照</p>
         <div className="grid grid-cols-2 gap-3">
           <div className="rounded-2xl bg-night-soft/70 p-4">
             <p className="text-[11px] text-white/45">你在雾里</p>
@@ -196,7 +196,8 @@ function SideChip({ side, label }: { side: Side; label: string }) {
       </div>
       <div className="text-center">
         <p className="text-[11px] text-white/45">{label}</p>
-        <p className="text-xs font-medium leading-5 text-white">{side.identity.name}</p>
+        <p className="text-sm font-medium leading-5 text-white">{side.nickname}</p>
+        <p className="mt-0.5 text-[10px] text-white/45">{side.identity.name}</p>
       </div>
     </div>
   )

@@ -4,6 +4,7 @@ import { getIdentity } from '@/lib/content/identities'
 import { getScene, getOption } from '@/lib/content/scenes'
 import { pairScore } from '@/lib/scoring'
 import { overlapOf, blendScore } from '@/lib/vane-match'
+import { resolveStage } from '@/lib/stage'
 
 // GET /api/home?userId=&sessionId=
 // 首页聚合接口：阶段判定 + 推荐流/配对列表/关系卡，一次往返取代三次请求
@@ -23,21 +24,14 @@ export async function GET(req: Request) {
   const userId = searchParams.get('userId')
   const sessionId = searchParams.get('sessionId')
 
-  // —— 阶段判定 ——
-  let stage: 'new' | 'played' | 'registered' = 'new'
-  let identityCode: string | null = null
   let me: Awaited<ReturnType<typeof loadMe>> = null
-  if (userId) {
-    me = await loadMe(userId)
-    if (me) stage = 'registered'
-  }
-  if (!me && sessionId) {
+  if (userId) me = await loadMe(userId)
+  let sessionReportIdentity: string | null = null
+  if (sessionId) {
     const session = await prisma.gameSession.findUnique({ where: { id: sessionId }, include: { report: true } })
-    if (session?.report) {
-      stage = 'played'
-      identityCode = session.report.identity
-    }
+    sessionReportIdentity = session?.report?.identity ?? null
   }
+  const { stage, identity: identityCode } = resolveStage({ user: me, sessionReportIdentity })
 
   const res: Record<string, unknown> = { stage, identity: identityCode }
 
@@ -58,8 +52,8 @@ export async function GET(req: Request) {
         userId: u.id,
         nickname: u.nickname ?? '匿名岛民',
         avatar: u.avatar,
-        city: u.city,
-        age: 2026 - u.birthYear,
+        city: u.city ?? '',
+        age: u.birthYear ? 2026 - u.birthYear : 0,
         identity: { code: identity.code, name: identity.name },
         scene: { title: scene.title, subtitle: scene.subtitle, prompt: scene.prompt },
         choice: { label: opt.label, quote: opt.quote },
@@ -72,31 +66,35 @@ export async function GET(req: Request) {
     return NextResponse.json(res)
   }
 
-  // —— registered：配对列表 + 关系卡 + 活动卡 ——
-  const myAnswers = me!.session!.answers.map((a) => ({ sceneNo: a.sceneNo, optionId: a.optionId }))
-  const myVane = await prisma.vaneAnswer.findMany({ where: { userId: me!.id } })
+  if (!me?.session || !me.gender || !me.birthYear) {
+    return NextResponse.json({ ...res, matches: [] })
+  }
 
-  const liked = await prisma.like.findMany({ where: { fromUserId: me!.id }, select: { toUserId: true } })
-  const myMatches = await prisma.match.findMany({ where: { OR: [{ userAId: me!.id }, { userBId: me!.id }] } })
-  const excluded = new Set<string>([me!.id, ...liked.map((l) => l.toUserId), ...myMatches.map((m) => (m.userAId === me!.id ? m.userBId : m.userAId))])
+  // —— registered：配对列表 + 关系卡 + 活动卡 ——
+  const myAnswers = me.session.answers.map((a) => ({ sceneNo: a.sceneNo, optionId: a.optionId }))
+  const myVane = await prisma.vaneAnswer.findMany({ where: { userId: me.id } })
+
+  const liked = await prisma.like.findMany({ where: { fromUserId: me.id }, select: { toUserId: true } })
+  const myMatches = await prisma.match.findMany({ where: { OR: [{ userAId: me.id }, { userBId: me.id }] } })
+  const excluded = new Set<string>([me.id, ...liked.map((l) => l.toUserId), ...myMatches.map((m) => (m.userAId === me.id ? m.userBId : m.userAId))])
 
   const pool = await prisma.user.findMany({
     where: {
       id: { notIn: [...excluded] },
-      gender: me!.gender === 'male' ? 'female' : 'male',
-      birthYear: { gte: me!.ageMin, lte: me!.ageMax },
-      ageMin: { lte: me!.birthYear },
-      ageMax: { gte: me!.birthYear },
-      ...(me!.cityScope === 'same_city' ? { OR: [{ city: me!.city }, { cityScope: 'any' }] } : {}),
+      gender: me.gender === 'male' ? 'female' : 'male',
+      birthYear: { gte: me.ageMin, lte: me.ageMax, not: null },
+      ageMin: { lte: me.birthYear },
+      ageMax: { gte: me.birthYear },
+      ...(me.cityScope === 'same_city' ? { OR: [{ city: me.city }, { cityScope: 'any' }] } : {}),
     },
     include: { session: { include: { answers: true, report: true } }, vaneAnswers: true },
   })
 
   res.matches = pool
     .filter((u) => {
-      const theirLevel = EDU_LEVEL[u.education] ?? 0
-      const myLevel = EDU_LEVEL[me!.education] ?? 0
-      return theirLevel >= (EDU_REQ[me!.eduReq] ?? 0) && myLevel >= (EDU_REQ[u.eduReq] ?? 0)
+      const theirLevel = EDU_LEVEL[u.education ?? ''] ?? 0
+      const myLevel = EDU_LEVEL[me.education ?? ''] ?? 0
+      return theirLevel >= (EDU_REQ[me.eduReq] ?? 0) && myLevel >= (EDU_REQ[u.eduReq] ?? 0)
     })
     .map((u) => {
       const identity = getIdentity(u.session!.report!.identity)!
@@ -106,8 +104,8 @@ export async function GET(req: Request) {
       return {
         userId: u.id,
         nickname: u.nickname ?? '匿名岛民',
-        age: 2026 - u.birthYear,
-        city: u.city,
+        age: u.birthYear ? 2026 - u.birthYear : 0,
+        city: u.city ?? '',
         height: u.height,
         avatar: u.avatar,
         identity: { code: identity.code, name: identity.name, core: identity.core, tags: identity.tags.slice(0, 2) },

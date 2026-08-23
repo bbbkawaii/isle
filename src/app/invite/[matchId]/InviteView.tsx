@@ -114,7 +114,7 @@ export default function InviteView({ matchId, fogVerdict, sides, activities, inv
         </div>
         <div>
           <h1 className="font-display text-xl leading-6 text-ink">
-            {me.identity.name} <span className="text-xs font-normal text-ink-soft">×</span> {ta.identity.name}
+            {me.nickname} <span className="text-xs font-normal text-ink-soft">×</span> {ta.nickname}
           </h1>
           <p className="text-[11px] text-ink-soft">把这次配对，变成一次具体的见面</p>
         </div>

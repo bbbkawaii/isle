@@ -36,11 +36,17 @@ export default function VanePlayPage() {
   const [roleHint, setRoleHint] = useState('')
   const lastSpeaker = useRef<string>('')
 
-  // 门槛检查按用户阶段分流：没玩过五幕→去玩；玩过没登记→去办登岛证
+  // 门槛检查：没登岛→去玩；玩过没登记→去办登岛证。性别优先用形象设置时已选的。
   useEffect(() => {
+    const stored = localStorage.getItem('island_gender')
+    if (stored === 'male' || stored === 'female') setGender(stored)
     const userId = getMyUserId()
     const sessionId = localStorage.getItem('island_session_id')
-    if (!userId && !sessionId) {
+    if (!userId) {
+      router.replace('/login')
+      return
+    }
+    if (!sessionId) {
       setGate('need-play')
       return
     }
@@ -54,10 +60,17 @@ export default function VanePlayPage() {
           fetch(`/api/me?userId=${userId}`)
             .then((r) => r.json())
             .then((d) => {
-              setGender(d.user.gender as Gender)
+              const g = d.user?.gender as Gender | undefined
+              if (g === 'male' || g === 'female') {
+                setGender(g)
+                localStorage.setItem('island_gender', g)
+              }
               setGate('ok')
             })
-            .catch(() => setGate('need-register'))
+            .catch(() => {
+              if (stored === 'male' || stored === 'female') setGate('ok')
+              else setGate('need-register')
+            })
         } else if (st.stage === 'played') {
           setGate('need-register')
         } else {
@@ -114,10 +127,10 @@ export default function VanePlayPage() {
   if (gate === 'need-register') {
     return (
       <main className="shell flex min-h-[100dvh] flex-col items-center justify-center bg-paper px-8 text-center">
-        <p className="font-display text-lg text-ink">办张登岛证就能玩了</p>
-        <p className="mt-2 text-xs leading-5 text-ink-soft">你已经完成登岛问答，只差登记这一步——剧情匹配需要知道你的视角</p>
+        <p className="font-display text-lg text-ink">填完资料就能玩了</p>
+        <p className="mt-2 text-xs leading-5 text-ink-soft">剧情要按你的视角展开，先把资料填一次</p>
         <Link href="/register" className="mt-6 flex h-12 items-center justify-center rounded-full bg-coral px-8 text-sm font-semibold text-white">
-          办理登岛证
+          填写资料
         </Link>
         <Link href="/play" className="mt-3 text-xs text-ink-soft underline">重新回答登岛问答</Link>
       </main>

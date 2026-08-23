@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { getIdentity } from '@/lib/content/identities'
+import { isProfileComplete } from '@/lib/stage'
 
 // GET /api/me?userId= —— 我的：登岛证 + 身份报告 + 匹配/邀约记录
 export async function GET(req: Request) {
@@ -47,11 +48,12 @@ export async function GET(req: Request) {
   const report = user.session?.report
   return NextResponse.json({
     registered: true,
+    profileComplete: isProfileComplete(user),
     user: {
       nickname: user.nickname,
       avatar: user.avatar,
       gender: user.gender,
-      age: 2026 - user.birthYear,
+      age: user.birthYear ? 2026 - user.birthYear : 0,
       city: user.city,
       education: user.education,
       height: user.height,

@@ -71,13 +71,13 @@ export default function HomePage() {
   const [avatarRaw, setAvatarRaw] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!localStorage.getItem('island_avatar')) {
-      router.replace('/avatar')
+    const userId = getMyUserId()
+    if (!userId) {
+      router.replace('/login')
       return
     }
     setAvatarRaw(localStorage.getItem('island_avatar'))
 
-    const userId = getMyUserId()
     const sessionId = localStorage.getItem('island_session_id')
     const qs = new URLSearchParams()
     if (userId) qs.set('userId', userId)
@@ -109,7 +109,7 @@ export default function HomePage() {
       return
     }
     setData((prev) => (prev ? { ...prev, matches: (prev.matches ?? []).filter((x) => x.userId !== c.userId) } : prev))
-    setPendingMsg(`已向 ${c.identity.name}·${c.nickname} 发出心动，TA也心动就会配对（在我的里可看）`)
+    setPendingMsg(`已向 ${c.nickname} 发出心动，TA也心动就会配对（在我的里可看）`)
     setLiking(null)
   }
 
@@ -137,28 +137,13 @@ export default function HomePage() {
         </div>
       )}
 
-      {/* —— 新用户：登岛引导 —— */}
+      {/* —— 新用户：直接登岛 —— */}
       {data?.stage === 'new' && (
         <>
           <section className="rounded-card bg-gradient-to-br from-[#14263a] to-[#1d4a5f] p-6 text-white shadow-sm">
-            <p className="text-xs text-white/55">欢迎来到屿见，三步开始</p>
-            <div className="mt-4 space-y-3.5">
-              {[
-                ['登岛', '回答几道情境题，5 分钟'],
-                ['获得你的岛上身份', '你住在哪里，你就是谁'],
-                ['按契合指数认识人', '双向心动，约一次真的见面'],
-              ].map(([t, d], i) => (
-                <div key={t} className="flex items-center gap-3">
-                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-coral text-xs font-bold">
-                    {i + 1}
-                  </span>
-                  <div>
-                    <p className="text-sm font-medium">{t}</p>
-                    <p className="text-[11px] text-white/50">{d}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <p className="text-xs text-white/55">欢迎来到屿见</p>
+            <h2 className="font-display mt-2 text-2xl leading-8">先回答几道情境题，<br />再按契合认识人</h2>
+            <p className="mt-3 text-[13px] leading-6 text-white/65">大约 5 分钟。没有对错，选完就知道你在岛上是谁。</p>
             <Link
               href="/play"
               className="mt-5 flex w-full cursor-pointer items-center justify-center gap-2 rounded-full bg-coral py-4 text-base font-semibold shadow-[0_8px_24px_rgba(255,107,94,0.45)] transition-transform active:scale-[0.98]"
@@ -186,7 +171,7 @@ export default function HomePage() {
             <IdentityIcon code={identity.code} size={24} />
           </span>
           <div className="flex-1">
-            <p className="text-[11px] text-white/50">你在岛上是</p>
+            <p className="text-[11px] text-white/50">你的岛民身份</p>
             <p className="font-display text-lg">{identity.name}</p>
           </div>
           <ChevronRight size={18} className="text-white/50" />
@@ -198,9 +183,9 @@ export default function HomePage() {
             href="/register"
             className="mt-3 flex h-14 w-full cursor-pointer items-center justify-center rounded-full bg-coral text-base font-semibold text-white shadow-[0_8px_30px_rgba(255,107,94,0.35)] transition-transform active:scale-[0.98]"
           >
-            办理登岛证，解锁配对 <ArrowRight size={18} />
+            填写资料，去认识人 <ArrowRight size={18} />
           </Link>
-          <p className="mt-3 text-center text-[11px] text-ink-soft">登记后即可看到和你同船的人与契合指数</p>
+          <p className="mt-3 text-center text-[11px] text-ink-soft">填一次资料就能看到和你同船的人</p>
         </>
       )}
 
@@ -251,11 +236,10 @@ function MatchSection({ card, index, liking, onLike }: { card: MatchCard; index:
       <div className="flex items-center gap-3">
         <UserAvatar avatar={card.avatar} seed={card.userId} size={52} />
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-medium text-ink">
-            {card.identity.name} <span className="text-xs font-normal text-ink-soft">· {card.nickname}</span>
-          </p>
+          <p className="truncate font-display text-lg leading-6 text-ink">{card.nickname}</p>
           <p className="mt-0.5 text-xs text-ink-soft">{card.city} · {card.age} 岁</p>
           <div className="mt-1.5 flex flex-wrap gap-1.5">
+            <span className="chip chip-coral">{card.identity.name}</span>
             {card.identity.tags.map((t, i) => (
               <span key={t} className={`chip ${['chip-coral', 'chip-sage', 'chip-sky', 'chip-sand'][i % 4]}`}>{t}</span>
             ))}
@@ -294,8 +278,8 @@ function TeaserSection({ card }: { card: Teaser }) {
       </div>
       <div className="mt-3 flex items-center gap-2.5">
         <UserAvatar avatar={card.avatar} seed={card.userId} size={34} />
-        <p className="truncate text-xs text-ink">
-          {card.identity.name} · <span className="text-ink-soft">{card.nickname}</span>
+        <p className="truncate text-sm text-ink">
+          {card.nickname} <span className="text-xs text-ink-soft">· {card.identity.name}</span>
         </p>
       </div>
     </section>
@@ -312,9 +296,8 @@ function RelationSection({ card }: { card: RelationCard }) {
       <div className="flex items-center gap-3">
         <UserAvatar avatar={card.other.avatar} seed={card.matchId} size={48} />
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-medium text-ink">
-            {card.other.identity.name} <span className="text-xs font-normal text-ink-soft">· {card.other.nickname}</span>
-          </p>
+          <p className="truncate font-display text-lg leading-6 text-ink">{card.other.nickname}</p>
+          <p className="mt-0.5 text-[11px] text-ink-soft">{card.other.identity.name}</p>
           <p className="mt-1 text-xs text-teal">{STATUS_TEXT[card.status] ?? '已配对'}</p>
           {card.activityTitle && <p className="mt-0.5 text-xs text-ink-soft">{card.activityTitle}</p>}
         </div>

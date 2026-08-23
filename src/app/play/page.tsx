@@ -29,6 +29,10 @@ export default function PlayPage() {
   const sceneStart = useRef<number>(Date.now())
 
   useEffect(() => {
+    if (!getMyUserId()) {
+      router.replace('/login')
+      return
+    }
     const deviceToken = getDeviceToken()
     fetch('/api/session', {
       method: 'POST',

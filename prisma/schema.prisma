@@ -56,11 +56,11 @@ model User {
   email     String? @unique // 邮箱注册（无验证码）
   passwordHash String? // bcrypt
 
-  // —— 登岛证 ——
-  gender    String // male / female
-  birthYear Int
-  city      String
-  education String // high_school / college / bachelor / master / phd
+  // —— 登岛证（注册时先建账号，登岛后再填）——
+  gender    String? // male / female
+  birthYear Int?
+  city      String?
+  education String? // high_school / college / bachelor / master / phd
   height    Int? // cm
   intent    String? // serious / friends / expand
 

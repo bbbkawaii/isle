@@ -52,8 +52,8 @@ export async function POST(req: Request) {
       row = {
         nickname: u.nickname ?? '匿名岛民',
         avatar: u.avatar,
-        age: 2026 - u.birthYear,
-        city: u.city,
+        age: u.birthYear ? 2026 - u.birthYear : 0,
+        city: u.city ?? '',
         identityName: identity?.name ?? '岛民',
         answers: new Map(),
       }

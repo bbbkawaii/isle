@@ -1,7 +1,10 @@
 'use client'
 
+import { useEffect } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
+import { getMyUserId } from '@/lib/client-device'
 import { Heart, Coffee, Scale, Crown, Gamepad2, Play, Sparkles, type LucideIcon } from 'lucide-react'
 import { gameListMeta } from '@/lib/content/vane-games'
 import TabBar from '@/components/TabBar'
@@ -9,7 +12,11 @@ import TabBar from '@/components/TabBar'
 const ICONS: Record<string, LucideIcon> = { Heart, Coffee, Scale, Crown, Gamepad2 }
 
 export default function GamesPage() {
+  const router = useRouter()
   const games = gameListMeta()
+  useEffect(() => {
+    if (!getMyUserId()) router.replace('/login')
+  }, [router])
 
   return (
     <main className="shell bg-paper px-5 pb-28 pt-6">

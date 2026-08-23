@@ -18,8 +18,11 @@ export async function GET(req: Request) {
     include: { session: { include: { answers: true } } },
   })
   if (!me) return NextResponse.json({ error: 'user not found' }, { status: 404 })
+  if (!me.gender || !me.birthYear || !me.session) {
+    return NextResponse.json({ error: '请先填写资料' }, { status: 400 })
+  }
 
-  const myAnswers = me.session!.answers.map((a) => ({ sceneNo: a.sceneNo, optionId: a.optionId }))
+  const myAnswers = me.session.answers.map((a) => ({ sceneNo: a.sceneNo, optionId: a.optionId }))
 
   // 已互动过的人（心动过或已匹配）排除
   const liked = await prisma.like.findMany({ where: { fromUserId: me.id }, select: { toUserId: true } })
@@ -31,7 +34,7 @@ export async function GET(req: Request) {
       id: { notIn: [...excluded] },
       gender: me.gender === 'male' ? 'female' : 'male',
       // 双向年龄：对方在我的区间，我也在对方的区间
-      birthYear: { gte: me.ageMin, lte: me.ageMax },
+      birthYear: { gte: me.ageMin, lte: me.ageMax, not: null },
       ageMin: { lte: me.birthYear },
       ageMax: { gte: me.birthYear },
       // 城市双向：我要同城 → 对方同城或对方不限；对方要同城 → 城市相等已覆盖
@@ -46,8 +49,8 @@ export async function GET(req: Request) {
   const candidates = pool
     // 学历双向判定（映射数值后交叉比较）
     .filter((u) => {
-      const theirLevel = EDU_LEVEL[u.education] ?? 0
-      const myLevel = EDU_LEVEL[me.education] ?? 0
+      const theirLevel = EDU_LEVEL[u.education ?? ''] ?? 0
+      const myLevel = EDU_LEVEL[me.education ?? ''] ?? 0
       return theirLevel >= (EDU_REQ[me.eduReq] ?? 0) && myLevel >= (EDU_REQ[u.eduReq] ?? 0)
     })
     .map((u) => {
@@ -60,8 +63,8 @@ export async function GET(req: Request) {
       return {
         userId: u.id,
         nickname: u.nickname ?? '匿名岛民',
-        age: 2026 - u.birthYear,
-        city: u.city,
+        age: u.birthYear ? 2026 - u.birthYear : 0,
+        city: u.city ?? '',
         height: u.height,
         avatar: u.avatar,
         identity: { code: identity.code, name: identity.name, core: identity.core, tags: identity.tags.slice(0, 2) },

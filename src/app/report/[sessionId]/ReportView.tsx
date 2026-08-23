@@ -94,7 +94,7 @@ export default function ReportView({ identity, loveProfile, preview, slowest }: 
         >
           <p className="text-xs tracking-[0.25em] text-white/50">你会在岛上遇见谁</p>
           <p className="font-display mt-3 text-[15px] leading-8 text-white/90">{preview}</p>
-          <p className="mt-3 text-xs text-white/45">完成登岛登记，解锁具体候选人与契合解读</p>
+          <p className="mt-3 text-xs text-white/45">填一次资料，解锁具体候选人和契合解读</p>
         </motion.section>
 
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.6 }} className="space-y-3">
@@ -102,10 +102,10 @@ export default function ReportView({ identity, loveProfile, preview, slowest }: 
             href="/register"
             className="flex h-14 w-full cursor-pointer items-center justify-center rounded-full bg-coral text-base font-semibold text-white shadow-[0_8px_30px_rgba(255,107,94,0.35)] transition-transform active:scale-[0.98]"
           >
-            办理登岛证 · 解锁配对
+            填写资料 · 去认识人
           </Link>
           <Link href="/" className="block text-center text-xs text-ink-soft underline">
-            先不登记，回首页逛逛
+            先回首页逛逛
           </Link>
         </motion.div>
       </div>

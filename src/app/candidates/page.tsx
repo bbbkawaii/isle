@@ -79,9 +79,9 @@ export default function CandidatesPage() {
   if (noUser) {
     return (
       <main className="shell flex min-h-[100dvh] flex-col items-center justify-center bg-paper px-8 text-center">
-        <p className="text-sm text-ink-soft">还没办登岛证，先完成登岛问答再来认识人</p>
-        <Link href="/play" className="mt-6 flex h-12 items-center justify-center rounded-full bg-coral px-8 font-semibold text-white">
-          去登岛
+        <p className="text-sm text-ink-soft">先登录、登岛并填写资料，才能看到同船的人</p>
+        <Link href="/" className="mt-6 flex h-12 items-center justify-center rounded-full bg-coral px-8 font-semibold text-white">
+          回首页
         </Link>
       </main>
     )
@@ -124,8 +124,8 @@ export default function CandidatesPage() {
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <h2 className="font-display text-lg text-ink">{c.identity.name}</h2>
-                  <span className="truncate text-xs text-ink-soft">{c.nickname}</span>
+                  <h2 className="truncate font-display text-lg text-ink">{c.nickname}</h2>
+                  <span className="shrink-0 rounded-full bg-coral/10 px-2 py-0.5 text-[10px] text-coral-deep">{c.identity.name}</span>
                 </div>
                 <p className="mt-0.5 text-xs text-ink-soft">{c.identity.core}</p>
                 <p className="mt-1.5 flex items-center gap-1 text-xs text-ink-soft">

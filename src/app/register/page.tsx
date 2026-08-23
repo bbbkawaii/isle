@@ -1,11 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { ChevronDown } from 'lucide-react'
-import { getDeviceToken, setMyUserId } from '@/lib/client-device'
+import { getDeviceToken, getMyUserId } from '@/lib/client-device'
 
 const CITIES = ['上海', '杭州', '北京', '深圳', '广州', '成都', '南京', '苏州', '武汉', '西安', '其他']
 const YEARS = Array.from({ length: 22 }, (_, i) => 2006 - i)
@@ -24,7 +24,8 @@ const INTENTS = [
 
 export default function RegisterPage() {
   const router = useRouter()
-  const [gender, setGender] = useState<string>(typeof window !== 'undefined' ? localStorage.getItem('island_gender') ?? '' : '')
+  const [gender, setGender] = useState('')
+  const [nickname, setNickname] = useState('')
   const [birthYear, setBirthYear] = useState(1998)
   const [city, setCity] = useState('上海')
   const [education, setEducation] = useState('bachelor')
@@ -32,28 +33,45 @@ export default function RegisterPage() {
   const [intent, setIntent] = useState('serious')
   const [cityScope, setCityScope] = useState('same_city')
   const [eduReq, setEduReq] = useState('none')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
   const [showPrefs, setShowPrefs] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
 
+  useEffect(() => {
+    if (!getMyUserId()) {
+      router.replace('/login')
+      return
+    }
+    setNickname(localStorage.getItem('island_nickname') ?? '')
+    setGender(localStorage.getItem('island_gender') ?? '')
+  }, [router])
+
   async function submit() {
+    if (!nickname.trim()) {
+      setError('先给自己起个昵称')
+      return
+    }
     if (!gender) {
-      setError('性别信息缺失，请回首页重新设置形象')
+      setError('请选择性别')
+      return
+    }
+    const userId = getMyUserId()
+    if (!userId) {
+      router.replace('/login')
       return
     }
     setSubmitting(true)
     setError('')
+    localStorage.setItem('island_nickname', nickname.trim())
+    localStorage.setItem('island_gender', gender)
     const res = await fetch('/api/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
+        userId,
         deviceToken: getDeviceToken(),
         avatar: localStorage.getItem('island_avatar'),
-        email,
-        password,
-        nickname: localStorage.getItem('island_nickname'),
+        nickname: nickname.trim(),
         gender,
         birthYear,
         city,
@@ -68,11 +86,10 @@ export default function RegisterPage() {
     })
     const data = await res.json()
     if (!res.ok) {
-      setError(data.error ?? '登记失败')
+      setError(data.error ?? '保存失败')
       setSubmitting(false)
       return
     }
-    setMyUserId(data.userId)
     router.push('/')
   }
 
@@ -82,36 +99,42 @@ export default function RegisterPage() {
   return (
     <main className="shell bg-paper px-5 pb-10 pt-10">
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
-        <h1 className="font-display text-3xl text-ink">登岛登记</h1>
+        <h1 className="font-display text-3xl text-ink">填写资料</h1>
         <p className="mt-2 text-xs leading-5 text-ink-soft">
-          先上岛玩的是游客，想留下来认识人，需要办一张登岛证。
-          <br />
-          硬门槛决定你们能不能上同一座岛，契合指数决定你们会不会被排到彼此面前。
+          登岛已经完成。填一次资料就能按契合认识人——昵称是岛上怎么叫你，岛民身份是玩出来的，不是名字。
         </p>
       </motion.div>
 
-      {/* 账号：邮箱 + 密码（换设备也能找回身份） */}
       <div className="mt-6 space-y-4 rounded-card bg-card p-5 shadow-sm">
-        <p className="text-xs font-medium text-ink-soft">账号（邮箱 + 密码，换设备可登录找回）</p>
-        <input
-          value={email}
-          onChange={(e) => setEmail(e.target.value.trim())}
-          type="email"
-          inputMode="email"
-          placeholder="you@example.com"
-          className={selectCls}
-        />
-        <input
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          type="password"
-          placeholder="密码（至少 6 位）"
-          className={selectCls}
-        />
-      </div>
-
-      <div className="mt-4 space-y-4 rounded-card bg-card p-5 shadow-sm">
-        {/* 出生年份 / 城市（性别和昵称已在形象设置时填过） */}
+        <div>
+          <label className="mb-2 block text-xs font-medium text-ink-soft">昵称</label>
+          <input
+            value={nickname}
+            onChange={(e) => setNickname(e.target.value.slice(0, 12))}
+            placeholder="岛上怎么称呼你"
+            className={selectCls}
+          />
+        </div>
+        <div>
+          <p className="mb-2 text-xs font-medium text-ink-soft">性别（按异性匹配）</p>
+          <div className="grid grid-cols-2 gap-2.5">
+            {[
+              { v: 'female', l: '女生' },
+              { v: 'male', l: '男生' },
+            ].map((g) => (
+              <button
+                key={g.v}
+                type="button"
+                onClick={() => setGender(g.v)}
+                className={`h-11 cursor-pointer rounded-full border text-sm transition-colors duration-200 ${
+                  gender === g.v ? 'border-coral bg-coral/10 font-semibold text-coral-deep' : 'border-[#e2ded4] text-ink-soft'
+                }`}
+              >
+                {g.l}
+              </button>
+            ))}
+          </div>
+        </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className="mb-2 block text-xs font-medium text-ink-soft">出生年份</label>
@@ -136,8 +159,6 @@ export default function RegisterPage() {
             </div>
           </div>
         </div>
-
-        {/* 学历 */}
         <div>
           <label className="mb-2 block text-xs font-medium text-ink-soft">学历</label>
           <div className="relative">
@@ -149,8 +170,6 @@ export default function RegisterPage() {
             <ChevronDown size={16} className="pointer-events-none absolute right-3 top-4 text-ink-soft" />
           </div>
         </div>
-
-        {/* 选填：身高 / 交友目的 */}
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className="mb-2 block text-xs font-medium text-ink-soft">身高 cm（选填）</label>
@@ -176,7 +195,6 @@ export default function RegisterPage() {
         </div>
       </div>
 
-      {/* 门槛偏好（可折叠，默认宽进） */}
       <button
         type="button"
         onClick={() => setShowPrefs(!showPrefs)}
@@ -186,18 +204,9 @@ export default function RegisterPage() {
         <ChevronDown size={18} className={`text-ink-soft transition-transform duration-200 ${showPrefs ? 'rotate-180' : ''}`} />
       </button>
       {showPrefs && (
-        <motion.div
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: 'auto' }}
-          className="overflow-hidden"
-        >
+        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="overflow-hidden">
           <div className="mt-2 space-y-4 rounded-card bg-card p-5 shadow-sm">
-            <div>
-              <label className="mb-2 block text-xs font-medium text-ink-soft">
-                年龄范围：{2026 - birthYear - 5} ~ {2026 - birthYear + 7} 岁（对方）
-              </label>
-              <p className="text-xs text-[#a8a294]">默认比你小 5 岁到大 7 岁，本 demo 不单独调整</p>
-            </div>
+            <p className="text-xs text-[#a8a294]">默认比你小 5 岁到大 7 岁</p>
             <div>
               <label className="mb-2 block text-xs font-medium text-ink-soft">城市要求</label>
               <div className="grid grid-cols-2 gap-3">
@@ -209,7 +218,7 @@ export default function RegisterPage() {
                     key={c.v}
                     type="button"
                     onClick={() => setCityScope(c.v)}
-                    className={`h-11 cursor-pointer rounded-xl border text-sm transition-colors duration-200 ${
+                    className={`h-11 cursor-pointer rounded-xl border text-sm ${
                       cityScope === c.v ? 'border-teal bg-teal/10 font-semibold text-teal' : 'border-[#e2ded4] text-ink-soft'
                     }`}
                   >
@@ -234,20 +243,16 @@ export default function RegisterPage() {
       )}
 
       {error && <p className="mt-4 text-center text-xs text-coral-deep">{error}</p>}
-      <p className="mt-4 text-center text-[11px] text-ink-soft">
-        已有账号？<Link href="/login" className="text-coral-deep underline">直接登录</Link>，不用重新登记
-      </p>
 
       <button
         onClick={submit}
         disabled={submitting}
         className="mt-6 flex h-14 w-full cursor-pointer items-center justify-center rounded-full bg-coral text-base font-semibold text-white shadow-[0_8px_30px_rgba(255,107,94,0.35)] transition-transform active:scale-[0.98] disabled:opacity-60"
       >
-        {submitting ? '登记中……' : '领取登岛证，去认识人'}
+        {submitting ? '保存中……' : '保存资料，去认识人'}
       </button>
       <p className="mt-3 text-center text-[11px] text-ink-soft">
-        门槛是你自己的选择，平台只负责双向尊重 ·{' '}
-        <Link href="/" className="underline">回首页</Link>
+        形象可以稍后在「我的 → 改形象」里换 · <Link href="/" className="underline">回首页</Link>
       </p>
     </main>
   )

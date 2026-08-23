@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { ChevronRight, ChevronDown, MapPin, Heart, PenLine } from 'lucide-react'
 import { getMyUserId, clearIdentity } from '@/lib/client-device'
@@ -11,6 +12,7 @@ import TabBar from '@/components/TabBar'
 
 interface MeData {
   registered: boolean
+  profileComplete?: boolean
   user?: {
     nickname: string | null
     avatar: string | null
@@ -49,28 +51,73 @@ const INVITE_TEXT: Record<string, string> = {
 }
 
 export default function ProfilePage() {
+  const router = useRouter()
   const [me, setMe] = useState<MeData | null>(null)
   const [loaded, setLoaded] = useState(false)
+  const [loadError, setLoadError] = useState(false)
   const [avatarRaw, setAvatarRaw] = useState<string | null>(null)
+  const [localNick, setLocalNick] = useState('')
+  const [editingNick, setEditingNick] = useState(false)
+  const [nickDraft, setNickDraft] = useState('')
+  const [nickBusy, setNickBusy] = useState(false)
 
   useEffect(() => {
     setAvatarRaw(localStorage.getItem('island_avatar'))
+    const storedNick = localStorage.getItem('island_nickname') ?? ''
+    setLocalNick(storedNick)
     const userId = getMyUserId()
     if (!userId) {
-      setMe({ registered: false })
-      setLoaded(true)
+      router.replace('/login')
       return
     }
     fetch(`/api/me?userId=${userId}`)
-      .then((r) => r.json())
+      .then(async (r) => {
+        if (!r.ok) throw new Error('me failed')
+        return r.json()
+      })
       .then((d) => {
-        // 登岛证过期（服务端数据重置）：清身份，展示重新登岛引导
-        if (!d.registered) clearIdentity()
+        if (!d.registered) {
+          clearIdentity()
+          router.replace('/login')
+          return
+        }
+        if (d.user?.nickname) {
+          localStorage.setItem('island_nickname', d.user.nickname)
+          setLocalNick(d.user.nickname)
+        }
+        if (d.user?.gender) localStorage.setItem('island_gender', d.user.gender)
+        if (d.user?.avatar) localStorage.setItem('island_avatar', d.user.avatar)
         setMe(d)
       })
-      .catch(() => setMe({ registered: false }))
+      .catch(() => {
+        setLoadError(true)
+        setMe({ registered: false })
+      })
       .finally(() => setLoaded(true))
   }, [])
+
+  async function saveNick() {
+    const name = nickDraft.trim().slice(0, 12)
+    if (!name || nickBusy) return
+    const userId = getMyUserId()
+    setNickBusy(true)
+    if (userId) {
+      const res = await fetch('/api/user/avatar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, nickname: name }),
+      }).catch(() => null)
+      if (!res?.ok) {
+        setNickBusy(false)
+        return
+      }
+    }
+    localStorage.setItem('island_nickname', name)
+    setLocalNick(name)
+    setMe((d) => (d?.user ? { ...d, user: { ...d.user, nickname: name } } : d))
+    setEditingNick(false)
+    setNickBusy(false)
+  }
 
   return (
     <main className="shell bg-paper px-5 pb-28 pt-6">
@@ -93,18 +140,47 @@ export default function ProfilePage() {
         <div className="flex items-center gap-4">
           <UserAvatar avatar={me?.user?.avatar ?? avatarRaw} seed="me" size={64} ring />
           <div className="flex-1">
-            {me?.registered ? (
-              <>
-                <p className="font-display text-lg">{me.report?.identity ?? '岛民'}</p>
-                <p className="mt-0.5 text-xs text-white/60">
-                  {me.user?.nickname ?? '岛民'} · {me.user?.city} · {me.user?.age} 岁
-                </p>
-              </>
+            <>
+              <p className="font-display text-2xl leading-7">{me?.user?.nickname || localNick || '还没取名'}</p>
+              {me?.report && (
+                <span className="mt-1.5 inline-block rounded-full bg-white/15 px-2.5 py-0.5 text-[11px] text-white/80">
+                  {me.report.identity}
+                </span>
+              )}
+              <p className="mt-1 text-xs text-white/60">
+                {loadError
+                  ? '资料暂时没同步上'
+                  : me?.user?.city
+                    ? `${me.user.city}${me.user.age ? ` · ${me.user.age} 岁` : ''}`
+                    : '资料还没填'}
+              </p>
+            </>
+            {editingNick ? (
+              <div className="mt-2 flex items-center gap-2">
+                <input
+                  value={nickDraft}
+                  onChange={(e) => setNickDraft(e.target.value.slice(0, 12))}
+                  placeholder="岛上怎么称呼你"
+                  className="h-8 flex-1 rounded-lg bg-white/10 px-2 text-xs text-white outline-none"
+                />
+                <button
+                  onClick={() => void saveNick()}
+                  disabled={nickBusy || !nickDraft.trim()}
+                  className="h-8 rounded-full bg-coral px-3 text-[11px] font-semibold text-white disabled:opacity-50"
+                >
+                  {nickBusy ? '…' : '保存'}
+                </button>
+              </div>
             ) : (
-              <>
-                <p className="font-display text-lg">游客</p>
-                <p className="mt-0.5 text-xs text-white/60">完成登岛问答、办登岛证后点亮身份</p>
-              </>
+              <button
+                onClick={() => {
+                  setNickDraft(me?.user?.nickname ?? localNick)
+                  setEditingNick(true)
+                }}
+                className="mt-2 text-[11px] text-white/70 underline"
+              >
+                {localNick || me?.user?.nickname ? '改昵称' : '设置昵称'}
+              </button>
             )}
           </div>
           <Link
@@ -118,15 +194,17 @@ export default function ProfilePage() {
       )}
 
       {/* 未登记引导 */}
-      {loaded && me && !me.registered && (
+      {loaded && me?.registered && !me.profileComplete && (
         <section className="mt-4 rounded-card bg-card p-5 text-center shadow-sm">
-          <p className="text-sm text-ink">还没办登岛证</p>
-          <p className="mt-2 text-xs leading-5 text-ink-soft">先完成登岛问答拿到人格报告，再登记解锁配对</p>
+          <p className="text-sm text-ink">{me.report ? '登岛完成，还差资料' : '还没登岛'}</p>
+          <p className="mt-2 text-xs leading-5 text-ink-soft">
+            {me.report ? '填一次资料就能按契合认识人' : '先玩登岛问答，再填写资料'}
+          </p>
           <Link
-            href="/play"
+            href={me.report ? '/register' : '/play'}
             className="mt-4 flex h-12 cursor-pointer items-center justify-center rounded-full bg-coral text-sm font-semibold text-white"
           >
-            登岛开局
+            {me.report ? '填写资料' : '开始登岛'}
           </Link>
         </section>
       )}
@@ -161,9 +239,8 @@ export default function ProfilePage() {
               <div key={l.toUserId} className="flex items-center gap-3 rounded-card bg-card p-3.5">
                 <UserAvatar avatar={l.avatar} seed={l.toUserId} size={40} />
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm text-ink">
-                    {l.identity} · <span className="text-ink-soft">{l.nickname}</span>
-                  </p>
+                  <p className="truncate font-display text-base text-ink">{l.nickname}</p>
+                  <p className="text-[11px] text-ink-soft">{l.identity}</p>
                   <p className="text-[11px] text-ink-soft">心动已送达，TA也心动时自动配对</p>
                 </div>
                 <span className="chip chip-sand">等待中</span>
@@ -191,9 +268,8 @@ export default function ProfilePage() {
                   </span>
                 </span>
                 <div className="flex-1">
-                  <p className="text-sm text-ink">
-                    {m.otherIdentity} · <span className="text-ink-soft">{m.otherNickname}</span>
-                  </p>
+                  <p className="truncate font-display text-base text-ink">{m.otherNickname}</p>
+                  <p className="mt-0.5 text-[11px] text-ink-soft">{m.otherIdentity}</p>
                   <p className="mt-0.5 text-xs text-ink-soft">
                     {m.invitationStatus ? `${INVITE_TEXT[m.invitationStatus] ?? ''}${m.activityTitle ? ` · ${m.activityTitle}` : ''}` : '已配对 · 待发起邀约'}
                   </p>
@@ -206,7 +282,7 @@ export default function ProfilePage() {
       )}
 
       {/* 登岛证信息 */}
-      {loaded && me?.registered && me.user && (
+      {loaded && me?.profileComplete && me.user && (
         <section className="mt-4 rounded-card bg-card p-5 shadow-sm">
           <p className="mb-3 text-xs font-medium text-ink-soft">登岛证</p>
           <div className="grid grid-cols-2 gap-y-2.5 text-xs">
@@ -221,18 +297,20 @@ export default function ProfilePage() {
         </section>
       )}
 
-      {loaded && me?.registered && me.user?.prefs && <PrefsSection userId={getMyUserId() ?? ''} initial={me.user.prefs} />}
+      {loaded && me?.profileComplete && me.user?.prefs && <PrefsSection userId={getMyUserId() ?? ''} initial={me.user.prefs} />}
 
       {loaded && me?.registered && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-4 space-y-3">
-          <Link
-            href="/candidates"
-            className="flex h-12 w-full cursor-pointer items-center justify-center rounded-full bg-night text-sm font-semibold text-white"
-          >
-            回到候选池
-          </Link>
+          {me.profileComplete && (
+            <Link
+              href="/candidates"
+              className="flex h-12 w-full cursor-pointer items-center justify-center rounded-full bg-night text-sm font-semibold text-white"
+            >
+              回到候选池
+            </Link>
+          )}
           <button
-            onClick={() => { clearIdentity(); location.href = '/' }}
+            onClick={() => { clearIdentity(); location.href = '/login' }}
             className="h-11 w-full cursor-pointer rounded-full text-xs text-ink-soft underline"
           >
             退出登录（下次用邮箱登录找回）
