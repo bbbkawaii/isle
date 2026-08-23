@@ -176,6 +176,15 @@ export default function CandidatesPage() {
           心动是双向的，两边都按下才会配对 <ArrowRight size={12} />
         </p>
       )}
+
+      {!loading && (
+        <Link
+          href="/"
+          className="mt-6 flex h-12 w-full cursor-pointer items-center justify-center rounded-full border border-[#e2ded4] text-sm text-ink-soft transition-colors duration-200 hover:bg-[#f0ede5] active:scale-[0.98]"
+        >
+          返回首页
+        </Link>
+      )}
     </main>
   )
 }

@@ -182,6 +182,12 @@ export default function MatchView({ matchId, score, narrative, sides, verdict, k
             约TA见一面 <ArrowRight size={18} />
           </Link>
         )}
+        <Link
+          href="/"
+          className="mt-3 flex h-12 w-full cursor-pointer items-center justify-center rounded-full border border-white/20 text-sm text-white/60 transition-colors hover:text-white/80 active:scale-[0.98]"
+        >
+          返回首页
+        </Link>
         <p className="mt-3 text-center text-[11px] text-white/40">线上理解的自然下一步，是一场具体的活动</p>
       </motion.div>
     </main>

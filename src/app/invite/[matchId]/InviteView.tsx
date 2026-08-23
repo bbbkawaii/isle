@@ -155,9 +155,15 @@ export default function InviteView({ matchId, fogVerdict, sides, activities, inv
               <p className="mt-2 text-sm leading-7 text-ink">{invitation.inviteText}</p>
             </div>
             <p className="mt-3 text-center text-[11px] text-ink-soft">等待 TA 回应……</p>
+            <Link
+              href="/"
+              className="mt-4 flex w-full h-12 cursor-pointer items-center justify-center rounded-full border border-[#e2ded4] text-sm text-ink-soft transition-colors duration-200 hover:bg-[#f0ede5] active:scale-[0.98]"
+            >
+              返回首页
+            </Link>
             <button
               onClick={() => setStep('ta')}
-              className="mt-4 flex w-full cursor-pointer items-center justify-center gap-2 rounded-full bg-night py-4 text-sm font-semibold text-white transition-transform active:scale-[0.98]"
+              className="mt-3 flex w-full cursor-pointer items-center justify-center gap-2 rounded-full bg-night py-4 text-sm font-semibold text-white transition-transform active:scale-[0.98]"
             >
               切换到 TA 的视角，替 TA 看看 <IdentityIcon code={ta.identity.code} size={16} />
             </button>
@@ -321,6 +327,19 @@ export default function InviteView({ matchId, fogVerdict, sides, activities, inv
             >
               首次见面建议选择公共场所 · 行程可分享给紧急联系人
             </motion.p>
+
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 1.6 }}
+            >
+              <Link
+                href="/"
+                className="mt-4 flex h-12 w-full cursor-pointer items-center justify-center rounded-full border border-[#e2ded4] text-sm text-ink-soft transition-colors duration-200 hover:bg-[#f0ede5] active:scale-[0.98]"
+              >
+                返回首页
+              </Link>
+            </motion.div>
           </motion.section>
         )}
 
